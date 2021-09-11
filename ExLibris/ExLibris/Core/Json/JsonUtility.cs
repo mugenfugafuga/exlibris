@@ -7,7 +7,7 @@ namespace ExLibris.Core.Json
         private const char keySeparator = '.';
         private const string arrayBra = "[";
         private const string arrayKet = "]";
-
+        private const string jsonObjectName = "JsonObject"; 
 
         public static string[] SplitKeyPath(string keyPath) => IsRootElement(keyPath) ? null : keyPath.Split(keySeparator);
 
@@ -44,5 +44,8 @@ namespace ExLibris.Core.Json
         public static Dictionary<string, object> CastJsonDictionary(object obj) => (Dictionary<string, object>)obj;
 
         public static List<object> CastJsonArray(object obj) => (List<object>)obj;
+
+        public static ObjectHandle NewJsonObjectHandle(ObjectRepository objectRepository, object value)
+            => new ObjectHandle(jsonObjectName, objectRepository, value);
     }
 }

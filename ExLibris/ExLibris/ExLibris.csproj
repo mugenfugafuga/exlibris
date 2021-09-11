@@ -55,10 +55,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ExcelDnaUtility.cs" />
     <Compile Include="Core\Json\JsonObjectBuilder.cs" />
     <Compile Include="Core\Json\JsonObjectSerialiser.cs" />
     <Compile Include="Core\Json\JsonUtility.cs" />
+    <Compile Include="Core\ObjectHandle.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
+    <Compile Include="ExLibrisContext.cs" />
+    <Compile Include="Json\JsonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

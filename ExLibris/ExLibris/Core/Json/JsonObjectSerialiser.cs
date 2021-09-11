@@ -6,6 +6,6 @@ namespace ExLibris.Core.Json
     {
         public static string Serialize(object jsonObject) => JsonSerializer.ToJsonString(jsonObject);
 
-        public static string SerializePrety(object jsonObject) => JsonSerializer.PrettyPrint(JsonSerializer.Serialize(jsonObject));
+        public static string ToJsonPrettyText(object jsonObject) => JsonSerializer.PrettyPrint(JsonSerializer.Serialize(jsonObject));
     }
 }
