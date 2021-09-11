@@ -6,36 +6,44 @@ namespace ExLibris.Core.Json
 {
     public class JsonObjectBuilder
     {
+        public static readonly ObjectRepository DefaultObjectRepository = new ObjectRepository();
+
         private Dictionary<string, object> shortcut = new Dictionary<string, object>();
         private object root = null;
+        private ObjectRepository objectRepository;
 
-        public JsonObjectBuilder()
+        public JsonObjectBuilder() : this(DefaultObjectRepository)
         {
+        }
+
+        public JsonObjectBuilder(ObjectRepository objectRepository)
+        {
+            this.objectRepository = objectRepository;
         }
 
         public JsonObjectBuilder AddJsonValue(string keyPath, object value)
         {
             if (JsonUtility.IsRootElement(keyPath))
             {
-
                 return SetOnlyRootValue(value);
             }
 
             var je = PickUpPreviousElement(keyPath);
 
             var (_, lastkey) = JsonUtility.SplitLastKey(keyPath);
+            var v = RevealValue(value);
 
             if (JsonUtility.IsJsonArray(lastkey))
             {
                 var ja = JsonUtility.CastJsonArray(je);
                 var index = JsonUtility.GetJsonArrayIndex(lastkey);
                 ResizeJsonArray(ja, index);
-                ja[index] = value;
+                ja[index] = v;
             }
             else
             {
                 var jd = JsonUtility.CastJsonDictionary(je);
-                jd[lastkey] = value;
+                jd[lastkey] = v;
 
             }
 
@@ -49,7 +57,7 @@ namespace ExLibris.Core.Json
                 throw new Exception($"root exists already. value {rootValue}");
             }
 
-            root = rootValue;
+            root = RevealValue(rootValue);
 
             return this;
         }
@@ -136,5 +144,14 @@ namespace ExLibris.Core.Json
             }
         }
 
+        private object RevealValue(object value)
+        {
+            if(value is string && objectRepository.TryGetObject((string)value, out var v))
+            {
+                return v;
+            }
+
+            return value;
+        }
     }
 }

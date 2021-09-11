@@ -58,6 +58,7 @@
     <Compile Include="Core\Json\JsonObjectBuilder.cs" />
     <Compile Include="Core\Json\JsonObjectSerialiser.cs" />
     <Compile Include="Core\Json\JsonUtility.cs" />
+    <Compile Include="Core\ObjectRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

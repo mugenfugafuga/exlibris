@@ -261,5 +261,39 @@ namespace ExLibris.Core.Json.Tests
                 .AddJsonValue("elem0.elem1", 1)
                 .AddJsonValue("[0].elem1", 2);
         }
+
+        [TestMethod()]
+        public void JsonObjectBuilder_BuildJsonObject_UsingObjectRepository_Text()
+        {
+            var or = new ObjectRepository();
+
+            {
+                var orjo = new JsonObjectBuilder()
+                    .AddJsonValue("vstring", "hoge")
+                    .AddJsonValue("vint", 42)
+                    .AddJsonValue("vdouble", -123.45)
+                    .AddJsonValue("vtrue", true)
+                    .AddJsonValue("vfalse", false)
+                    .BuildJsonObject();
+
+                or.RegisterObject("__jo", orjo);
+            }
+
+            var jo0 = new JsonObjectBuilder(or)
+                .SetOnlyRootValue("__jo")
+                .BuildJsonObject();
+            Assert.AreEqual(
+                @"{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false}",
+                JsonObjectSerialiser.Serialize(jo0));
+
+            var jo1 = new JsonObjectBuilder(or)
+                .AddJsonValue("elem0", "__jo")
+                .AddJsonValue("elem1.[0]", "__jo")
+                .AddJsonValue("elem2", 42)
+                .BuildJsonObject();
+            Assert.AreEqual(
+                @"{""elem0"":{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false},""elem1"":[{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false}],""elem2"":42}",
+                JsonObjectSerialiser.Serialize(jo1));
+        }
     }
 }
