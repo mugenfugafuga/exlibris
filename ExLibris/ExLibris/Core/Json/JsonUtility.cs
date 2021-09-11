@@ -1,0 +1,52 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ExLibris.Core.Json
+{
+    static class JsonUtility
+    {
+        private const char keySeparator = '.';
+        private const string arrayBra = "[";
+        private const string arrayKet = "]";
+
+
+        public static string[] SplitKeyPath(string keyPath) => IsRootElement(keyPath) ? null : keyPath.Split(keySeparator);
+
+        public static (string FrontPartKey, string LastKey) SplitLastKey(string keyPath)
+        {
+            if (IsRootElement(keyPath))
+            {
+                return (null, null);
+            }
+
+            var lastSepPos = keyPath.LastIndexOf(keySeparator);
+
+            if (lastSepPos < 0)
+            {
+                return (null, keyPath);
+            }
+
+            return (keyPath.Substring(0, lastSepPos), keyPath.Substring(lastSepPos + 1));
+        }
+
+        public static bool IsRootElement(string keyPath) => string.IsNullOrEmpty(keyPath);
+
+        public static bool IsJsonArray(string key) => key.StartsWith(arrayBra) && key.EndsWith(arrayKet);
+
+        public static int GetJsonArrayIndex(string key) => int.Parse(key.Substring(1, key.Length - 2));
+
+        public static object NewJsonElement(string key)
+            => IsJsonArray(key) ? (object)new List<object>() : new Dictionary<string, object>();
+
+        public static bool IsJsonDictionary(object obj) => obj is Dictionary<string, object>;
+
+        public static bool IsJsonArray(object obj) => obj is List<object>;
+
+        public static Dictionary<string, object> CastJsonDictionary(object obj) => (Dictionary<string, object>)obj;
+
+        public static List<object> CastJsonArray(object obj) => (List<object>)obj;
+    }
+}
