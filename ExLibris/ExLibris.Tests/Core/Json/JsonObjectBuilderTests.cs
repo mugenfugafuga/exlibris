@@ -20,7 +20,7 @@ namespace ExLibris.Core.Json.Tests
 
 
             Assert.AreEqual(@"test", (string)jo);
-            Assert.AreEqual(@"""test""", JsonObjectSerialiser.Serialize(jo));
+            Assert.AreEqual(@"""test""", JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -33,7 +33,7 @@ namespace ExLibris.Core.Json.Tests
 
             Assert.AreEqual(42, (int)jo);
             Assert.AreEqual(42, (double)jo);
-            Assert.AreEqual(@"42", JsonObjectSerialiser.Serialize(jo));
+            Assert.AreEqual(@"42", JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -45,7 +45,7 @@ namespace ExLibris.Core.Json.Tests
 
 
             Assert.AreEqual(-123.45, (double)jo);
-            Assert.AreEqual(@"-123.45", JsonObjectSerialiser.Serialize(jo));
+            Assert.AreEqual(@"-123.45", JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -57,7 +57,7 @@ namespace ExLibris.Core.Json.Tests
 
 
             Assert.AreEqual(true, (bool)jo);
-            Assert.AreEqual(@"true", JsonObjectSerialiser.Serialize(jo));
+            Assert.AreEqual(@"true", JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -69,7 +69,7 @@ namespace ExLibris.Core.Json.Tests
 
 
             Assert.AreEqual(false, (bool)jo);
-            Assert.AreEqual(@"false", JsonObjectSerialiser.Serialize(jo));
+            Assert.AreEqual(@"false", JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -81,7 +81,7 @@ namespace ExLibris.Core.Json.Tests
 
 
             Assert.AreEqual(null, jo);
-            Assert.AreEqual(@"null", JsonObjectSerialiser.Serialize(jo));
+            Assert.AreEqual(@"null", JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -112,7 +112,7 @@ namespace ExLibris.Core.Json.Tests
             Assert.AreEqual(false, (bool)jo["vfalse"]);
             Assert.AreEqual(
                 @"{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false}",
-                JsonObjectSerialiser.Serialize(jo));
+                JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -134,7 +134,7 @@ namespace ExLibris.Core.Json.Tests
             Assert.AreEqual(false, (bool)jo[4]);
             Assert.AreEqual(
                 @"[""hoge"",42,-123.45,true,false]",
-                JsonObjectSerialiser.Serialize(jo));
+                JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -176,7 +176,7 @@ namespace ExLibris.Core.Json.Tests
             Assert.AreEqual(false, (bool)jo["elm3"][4]);
             Assert.AreEqual(
                 @"{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false,""elm0"":{""vstring"":""hoge"",""vint"":42},""elm1"":{""vdouble"":-123.45,""vtrue"":true},""elm2"":{""vfalse"":false},""elm3"":[""hoge"",42,-123.45,true,false]}",
-                JsonObjectSerialiser.Serialize(jo));
+                JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -208,7 +208,7 @@ namespace ExLibris.Core.Json.Tests
             Assert.AreEqual(false, (bool)jo[3][4]);
             Assert.AreEqual(
                 @"[{""vstring"":""hoge"",""vint"":42},{""vdouble"":-123.45,""vtrue"":true},{""vfalse"":false},[""hoge"",42,-123.45,true,false]]",
-                JsonObjectSerialiser.Serialize(jo));
+                JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -250,7 +250,7 @@ namespace ExLibris.Core.Json.Tests
             Assert.AreEqual(false, (bool)jo["elm3"][2][1]);
             Assert.AreEqual(
                 @"{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false,""elm0"":{""vstring"":""hoge"",""elm00"":{""vint"":42}},""elm1"":{""elm10"":{""vdouble"":-123.45,""vtrue"":true}},""elm2"":{""vfalse"":false},""elm3"":[""hoge"",{""vint"":42,""vdouble"":-123.45},[true,false]]}",
-                JsonObjectSerialiser.Serialize(jo));
+                JsonObjectSerialiser.ToJsonText(jo));
         }
 
         [TestMethod()]
@@ -284,7 +284,7 @@ namespace ExLibris.Core.Json.Tests
                 .BuildJsonObject();
             Assert.AreEqual(
                 @"{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false}",
-                JsonObjectSerialiser.Serialize(jo0));
+                JsonObjectSerialiser.ToJsonText(jo0));
 
             var jo1 = new JsonObjectBuilder(or)
                 .AddJsonValue("elem0", "__jo")
@@ -293,7 +293,7 @@ namespace ExLibris.Core.Json.Tests
                 .BuildJsonObject();
             Assert.AreEqual(
                 @"{""elem0"":{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false},""elem1"":[{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false}],""elem2"":42}",
-                JsonObjectSerialiser.Serialize(jo1));
+                JsonObjectSerialiser.ToJsonText(jo1));
         }
     }
 }
