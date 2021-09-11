@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExLibris.Core.Json
 {
@@ -56,11 +54,7 @@ namespace ExLibris.Core.Json
             return this;
         }
 
-        public JsonObject BuildJsonObject()
-            => new JsonObject
-            {
-                Object = root,
-            };
+        public object BuildJsonObject() => root;
 
         public dynamic BuildDynamic() => root;
 
@@ -68,28 +62,40 @@ namespace ExLibris.Core.Json
         {
             var (frontPart, _) = JsonUtility.SplitLastKey(keyPath);
 
-            if (shortcut.TryGetValue(frontPart, out var fpo))
+            if (JsonUtility.IsRootElement(frontPart))
             {
-                return fpo;
+                if (root == null)
+                {
+                    root = JsonUtility.NewJsonElement(keyPath);
+                }
+
+                return root;
             }
-
-            var keys = JsonUtility.SplitKeyPath(keyPath);
-
-            if (root == null)
+            else
             {
-                root = JsonUtility.NewJsonElement(keys.First());
+                if (shortcut.TryGetValue(frontPart, out var fpo))
+                {
+                    return fpo;
+                }
+
+                var keys = JsonUtility.SplitKeyPath(keyPath);
+
+                if (root == null)
+                {
+                    root = JsonUtility.NewJsonElement(keys.First());
+                }
+
+                var run = root;
+
+                for (var i = 0; i < keys.Length - 1; ++i)
+                {
+                    run = DescendJsonElement(run, keys[i], keys[i + 1]);
+                }
+
+                shortcut[frontPart] = run;
+
+                return run;
             }
-
-            var run = root;
-
-            for(var i = 0; i < keys.Length - 1; ++i)
-            {
-                run = DescendJsonElement(run, keys[i], keys[i + 1]);
-            }
-
-            shortcut[frontPart] = run;
-
-            return run;
         }
 
         private object DescendJsonElement(object prev, string prevKey, string key)
@@ -124,7 +130,7 @@ namespace ExLibris.Core.Json
 
         private static void ResizeJsonArray(List<object> jarry, int index)
         {
-            for(var i = jarry.Count; i <= index + 1; ++i)
+            for(var i = jarry.Count; i <= index; ++i)
             {
                 jarry.Add(null);
             }
