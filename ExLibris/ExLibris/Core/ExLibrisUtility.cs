@@ -5,39 +5,11 @@ namespace ExLibris.Core
 {
     static class ExLibrisUtility
     {
-        public static bool IsMissingOrError(object obj) => IsExcelMissing(obj) || IsExcelError(obj);
-        
         public static bool IsExcelMissing(object obj) => obj is ExcelMissing;
 
         public static bool IsExcelError(object obj) => obj is ExcelError;
 
         public static bool IsExcelEmpty(object obj) => obj is ExcelEmpty;
-
-
-        public static void ThrowIfMissingOrError(object obj, Func<string> name)
-        {
-            if (IsMissingOrError(obj))
-            {
-                throw new Exception($"{name()} is missing or error.");
-            }
-        }
-
-        public static void ThrowIfMissingOrErrorOrEmpty(object obj, Func<string> name)
-        {
-            if (IsMissingOrError(obj) || IsExcelEmpty(obj))
-            {
-                throw new Exception($"{name()} is missing or error or empty.");
-            }
-        }
-
-
-        public static void ThrowIfMissingOrError(object obj, string name)
-        {
-            if(IsMissingOrError(obj))
-            {
-                throw new Exception($"{name} is missing or error.");
-            }
-        }
 
         public static object FuncOrNAIfThrown<T>(Func<T> func)
         {

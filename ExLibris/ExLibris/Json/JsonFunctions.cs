@@ -26,8 +26,6 @@ namespace ExLibris.Json
 
         private static object CreateJsonObject(object param, ExLibrisContext context, ExcelValueConverter valueConverter)
         {
-            ExLibrisUtility.ThrowIfMissingOrError(param, nameof(param));
-
             if (param is object[,])
             {
                 return CreateJsonObjectByMatrix(valueConverter.GetExcelMatrixAccessor((object[,])param), context);
