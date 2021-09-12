@@ -55,7 +55,7 @@ namespace ExLibris.Json
 
             var job = new JsonObjectBuilder(context.ObjectRepository);
 
-            for(var r = 0; r < rsize; ++r)
+            for (var r = 0; r < rsize; ++r)
             {
                 ExcelDnaUtility.ThrowIfMissingOrErrorOrEmpty(matrix[r, 0], () => $"matrix[{r}][0]");
                 ExcelDnaUtility.ThrowIfMissingOrError(matrix[r, 1], () => $"matrix[{r}][1]");
@@ -82,22 +82,15 @@ namespace ExLibris.Json
             Category = "ExLibris.Json"
             )]
         public static object ShowJsonText(string objectHandle, bool pretty)
-            => ExcelDnaUtility.FuncOrNAIfThrown(() => CreateJsonObject(objectHandle, pretty, ExLibrisContext.DefaultContext));
-
-        private static object CreateJsonObject(string objectHandle, bool pretty, ExLibrisContext context)
         {
-            return ExcelAsyncUtil.Observe(
-                nameof(CreateJsonObject),
-                new object[]{ objectHandle, pretty, },
-                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
-                {
-                    var o = pretty ?
-                        JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
-                        JsonObjectSerialiser.ToJsonText(context.ObjectRepository.GetObject(objectHandle));
+            var context = ExLibrisContext.DefaultContext;
 
-                    return ExcelDnaUtility.NewSimpleExcelObservable(o);
-                })
-                );
+            return ExcelDnaUtility.ObserveExcelObservableSimply(
+                nameof(ShowJsonText),
+                () => pretty ?
+                        JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
+                        JsonObjectSerialiser.ToJsonText(context.ObjectRepository.GetObject(objectHandle)),
+                objectHandle, pretty);
         }
 
         [ExcelFunction(
@@ -136,25 +129,24 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelAsyncUtil.Observe(
+            return ExcelDnaUtility.ObserveExcelObservableSimply(
                 nameof(GetJsonKeyValues),
-                new object[] { objectHandle, },
-                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                () =>
                 {
                     var jo = context.ObjectRepository.GetObject(objectHandle);
                     var values = new JsonObjectAccessor(jo).GetJsonValues().ToList();
 
                     var excelvalues = new object[values.Count, 2];
 
-                    for(var i = 0; i < values.Count; ++i)
+                    for (var i = 0; i < values.Count; ++i)
                     {
                         excelvalues[i, 0] = values[i].KeyPath;
                         excelvalues[i, 1] = ExcelDnaUtility.ToExcelValue(values[i].Value);
                     }
 
-                    return ExcelDnaUtility.NewSimpleExcelObservable(excelvalues);
-                })
-                );
+                    return excelvalues;
+                },
+                objectHandle);
         }
 
         [ExcelFunction(
@@ -201,71 +193,80 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelAsyncUtil.Observe(
-                nameof(GetJsonKeyValues),
-                new object[] { objectHandle, },
-                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+            return ExcelDnaUtility.ObserveExcelObservableSimply(
+                nameof(GetJsonTable),
+                () =>
                 {
                     var jo = context.ObjectRepository.GetObject(objectHandle);
 
                     if (JsonUtility.IsJsonDictionary(jo))
                     {
-                        var joa = new JsonObjectAccessor(jo);
-                        var keyPaths = joa.GetJsonValues()
-                        .Select(kv => kv.KeyPath)
-                        .ToArray();
-
-                        var values = new object[2, keyPaths.Length];
-
-                        var c = 0;
-                        foreach (var keyPath in keyPaths)
-                        {
-                            values[0, c] = keyPath;
-                            values[1, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
-                            ++c;
-                        }
-
-                        return ExcelDnaUtility.NewSimpleExcelObservable(values);
+                        return CreateJsonTable(JsonUtility.CastJsonDictionary(jo));
                     }
                     else if (JsonUtility.IsJsonArray(jo))
                     {
-                        var joas = JsonUtility.CastJsonArray(jo)
-                            .Select(joae => new JsonObjectAccessor(joae))
-                            .ToList();
-
-                        var keyPaths = joas
-                        .SelectMany(joa => joa.GetJsonValues().Select(kv => kv.KeyPath))
-                        .Distinct()
-                        .ToList();
-
-                        var values = new object[joas.Count + 1, keyPaths.Count];
-                        {
-                            var c = 0;
-                            foreach (var keyPath in keyPaths)
-                            {
-                                values[0, c] = ExcelDnaUtility.ToExcelValue(keyPath);
-                                ++c;
-                            }
-                        }
-
-                        var r = 1;
-                        foreach (var joa in joas)
-                        {
-                            var c = 0;
-                            foreach (var keyPath in keyPaths)
-                            {
-                                values[r, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
-                                ++c;
-                            }
-                            ++r;
-                        }
-
-                        return ExcelDnaUtility.NewSimpleExcelObservable(values);
+                        return CreateJsonTable(JsonUtility.CastJsonArray(jo));
                     }
 
-                    return ExcelDnaUtility.NewSimpleExcelObservable(ExcelDnaUtility.ToExcelValue(jo));
-                })
-                );
+                    return ExcelDnaUtility.ToExcelValue(jo);
+                },
+                objectHandle);
+        }
+
+        private static object CreateJsonTable(Dictionary<string, object> jdictionary)
+        {
+            var joa = new JsonObjectAccessor(jdictionary);
+            var keyPaths = joa.GetJsonValues()
+            .Select(kv => kv.KeyPath)
+            .ToArray();
+
+            var values = new object[2, keyPaths.Length];
+
+            var c = 0;
+            foreach (var keyPath in keyPaths)
+            {
+                values[0, c] = keyPath;
+                values[1, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                ++c;
+            }
+
+            return values;
+        }
+
+        private static object CreateJsonTable(List<object> jarray)
+        {
+            var joas = jarray
+                .Select(joae => new JsonObjectAccessor(joae))
+                .ToList();
+
+            var keyPaths = joas
+            .SelectMany(joa => joa.GetJsonValues().Select(kv => kv.KeyPath))
+            .Distinct()
+            .ToList();
+
+            var values = new object[joas.Count + 1, keyPaths.Count];
+            {
+                var c = 0;
+                foreach (var keyPath in keyPaths)
+                {
+                    values[0, c] = ExcelDnaUtility.ToExcelValue(keyPath);
+                    ++c;
+                }
+            }
+
+            var r = 1;
+            foreach (var joa in joas)
+            {
+                var c = 0;
+                foreach (var keyPath in keyPaths)
+                {
+                    values[r, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                    ++c;
+                }
+                ++r;
+            }
+
+            return values;
         }
 
         private static object ObserveJsonObjectHandle(

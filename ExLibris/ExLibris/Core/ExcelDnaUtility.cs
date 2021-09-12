@@ -47,6 +47,16 @@ namespace ExLibris.Core
 
         public static IExcelObservable NewSimpleExcelObservable(object value) => new SimpleExcelObservable(value);
 
+        public static object ObserveExcelObservableSimply(
+            string callerFunctionName,
+            Func<object> objectFunction,
+            params object[] parameters)
+            => ExcelAsyncUtil.Observe(
+                callerFunctionName,
+                parameters,
+                () => FuncOrNAIfThrown(() => NewSimpleExcelObservable(objectFunction()))
+                );
+
         public static object NullIfEmpty(object value) => IsEmpty(value) ? null : value;
 
         public static object ToExcelValue(object value) => value == null ? ExcelEmpty.Value : value;
