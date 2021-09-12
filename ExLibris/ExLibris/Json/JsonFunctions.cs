@@ -15,50 +15,46 @@ namespace ExLibris.Json
         public static object CreateJsonObject(object param)
         {
             var context = ExLibrisContext.DefaultContext;
+            var configuration = context.DefaultExLibrisConfiguration;
 
             return ObserveJsonObjectHandle(
                 nameof(CreateJsonObject),
                 context.ObjectRepository,
-                () => CreateJsonObject(param, context),
+                () => CreateJsonObject(param, context, ExLibrisUtility.GetExcelValueConverter(configuration)),
                 param);
         }
 
-        private static object CreateJsonObject(object param, ExLibrisContext context)
+        private static object CreateJsonObject(object param, ExLibrisContext context, ExcelValueConverter valueConverter)
         {
             ExLibrisUtility.ThrowIfMissingOrError(param, nameof(param));
 
             if (param is object[,])
             {
-                return CreateJsonObjectByMatrix((object[,])param, context);
+                return CreateJsonObjectByMatrix(valueConverter.GetExcelMatrixAccessor((object[,])param), context);
             }
+
+            var value = valueConverter.ToValue(param);
 
             if (param is string)
             {
-                return CreateJsonObjectByJsonText((string)param, context);
+                return CreateJsonObjectByJsonText((string)value, context);
             }
 
             {
                 return new JsonObjectBuilder(context.ObjectRepository)
-                            .SetOnlyRootValue(ExLibrisUtility.NullIfEmpty(param))
+                            .SetOnlyRootValue(value)
                             .BuildJsonObject();
             }
         }
 
-        private static object CreateJsonObjectByMatrix(object[,] matrix, ExLibrisContext context)
+        private static object CreateJsonObjectByMatrix(ExcelMatrixAccessor matrix, ExLibrisContext context)
         {
-            var rsize = matrix.GetLength(0);
-
             var job = new JsonObjectBuilder(context.ObjectRepository);
 
-            for (var r = 0; r < rsize; ++r)
+            foreach(var row in matrix.Rows)
             {
-                ExLibrisUtility.ThrowIfMissingOrErrorOrEmpty(matrix[r, 0], () => $"matrix[{r}][0]");
-                ExLibrisUtility.ThrowIfMissingOrError(matrix[r, 1], () => $"matrix[{r}][1]");
-
-                var keypath = (string)ExLibrisUtility.NullIfEmpty(matrix[r, 0]);
-                var value = ExLibrisUtility.NullIfEmpty(matrix[r, 1]);
-
-                ExLibrisUtility.ThrowIfMissingOrError(value, () => $"matrix[{r}][1]");
+                var keypath = (string)row[0];
+                var value = row[1];
 
                 job.AddJsonValue(keypath, value);
             }
@@ -93,12 +89,15 @@ namespace ExLibris.Json
         public static object GetJsonValue(string objectHandle, string keyPath)
         {
             var context = ExLibrisContext.DefaultContext;
+            var configuration = context.DefaultExLibrisConfiguration;
 
             return ExcelAsyncUtil.Observe(
                 nameof(GetJsonValue),
                 new object[] { objectHandle, keyPath, },
                 () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() =>
                 {
+                    var ev = ExLibrisUtility.GetExcelValueConverter(configuration);
+
                     var jo = context.ObjectRepository.GetObject(objectHandle);
                     var value = new JsonObjectAccessor(jo).GetJsonValue(keyPath);
 
@@ -108,7 +107,7 @@ namespace ExLibris.Json
                     }
                     else
                     {
-                        return ExLibrisUtility.NewExcelObservableDoNothingOnDisposing(ExLibrisUtility.ToExcelValue(value));
+                        return ExLibrisUtility.NewExcelObservableDoNothingOnDisposing(ev.ToExcel(value));
                     }
                 })
                 );
@@ -120,26 +119,27 @@ namespace ExLibris.Json
         public static object GetJsonKeyValues(string objectHandle)
         {
             var context = ExLibrisContext.DefaultContext;
+            var configuration = context.DefaultExLibrisConfiguration;
 
             return ExLibrisUtility.RunAsync(
                 nameof(GetJsonKeyValues),
-                () => CreateJsonKeyValueTable(context.ObjectRepository.GetObject(objectHandle)),
+                () => CreateJsonKeyValueTable(context.ObjectRepository.GetObject(objectHandle), ExLibrisUtility.GetExcelValueConverter(configuration)),
                 objectHandle);
         }
 
-        private static object[,] CreateJsonKeyValueTable(object jo)
+        private static object[,] CreateJsonKeyValueTable(object jo, ExcelValueConverter valueConverter)
         {
             var values = new JsonObjectAccessor(jo).GetJsonValues().ToList();
 
-            var excelvalues = new object[values.Count, 2];
+            var mb = valueConverter.GetExcelMatrixBuilder(values.Count, 2);
 
             for (var i = 0; i < values.Count; ++i)
             {
-                excelvalues[i, 0] = values[i].KeyPath;
-                excelvalues[i, 1] = ExLibrisUtility.ToExcelValue(values[i].Value);
+                mb[i, 0] = values[i].KeyPath;
+                mb[i, 1] = values[i].Value;
             }
 
-            return excelvalues;
+            return mb.BuildExcelMatrix();
         }
 
         [ExcelFunction(
@@ -148,31 +148,28 @@ namespace ExLibris.Json
         public static object CreateJsonArray(object[,] param)
         {
             var context = ExLibrisContext.DefaultContext;
+            var configuration = context.DefaultExLibrisConfiguration;
+            var matrix = ExLibrisUtility.GetExcelValueConverter(configuration).GetExcelMatrixAccessor(param);
 
             return ObserveJsonObjectHandle(
                 nameof(CreateJsonArray),
                 context.ObjectRepository,
-                () => CreateJsonArray(param, context),
+                () => CreateJsonArray(matrix, context),
                 param);
         }
 
-        private static List<object> CreateJsonArray(object[,] param, ExLibrisContext context)
+        private static List<object> CreateJsonArray(ExcelMatrixAccessor param, ExLibrisContext context)
         {
-            var rsize = param.GetLength(0);
-            var csize = param.GetLength(1);
-
-            var keys = Enumerable.Range(0, csize)
-            .Select(i => (string)ExLibrisUtility.NullIfEmpty(param[0, i]))
-            .ToArray();
+            var keys = param.Rows.First().Values.Cast<string>().ToList();
 
             var jo = new List<object>();
 
-            for (var r = 1; r < rsize; ++r)
+            foreach(var row in param.Rows.Skip(1))
             {
                 var job = new JsonObjectBuilder(context.ObjectRepository);
-                for (var c = 0; c < csize; ++c)
+                for (var c = 0; c < row.ColumnSize; ++c)
                 {
-                    job.AddJsonValue(keys[c], ExLibrisUtility.NullIfEmpty(param[r, c]));
+                    job.AddJsonValue(keys[c], row[c]);
                 }
                 jo.Add(job.BuildJsonObject());
             }
@@ -187,7 +184,10 @@ namespace ExLibris.Json
         public static object GetJsonTable(string objectHandle)
         {
             var context = ExLibrisContext.DefaultContext;
+            var configuration = context.DefaultExLibrisConfiguration;
 
+            var valueConverter = ExLibrisUtility.GetExcelValueConverter(configuration);
+;
             return ExLibrisUtility.RunAsync(
                 nameof(GetJsonTable),
                 () =>
@@ -196,39 +196,39 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionary(jo))
                     {
-                        return CreateJsonTable(JsonUtility.CastJsonDictionary(jo));
+                        return CreateJsonTable(JsonUtility.CastJsonDictionary(jo), valueConverter);
                     }
                     else if (JsonUtility.IsJsonArray(jo))
                     {
-                        return CreateJsonTable(JsonUtility.CastJsonArray(jo));
+                        return CreateJsonTable(JsonUtility.CastJsonArray(jo), valueConverter);
                     }
 
-                    return ExLibrisUtility.ToExcelValue(jo);
+                    return valueConverter.ToExcel(jo);
                 },
                 objectHandle);
         }
 
-        private static object CreateJsonTable(Dictionary<string, object> jdictionary)
+        private static object[,] CreateJsonTable(Dictionary<string, object> jdictionary, ExcelValueConverter valueConverter)
         {
             var joa = new JsonObjectAccessor(jdictionary);
             var keyPaths = joa.GetJsonValues()
             .Select(kv => kv.KeyPath)
             .ToArray();
 
-            var values = new object[2, keyPaths.Length];
+            var values = valueConverter.GetExcelMatrixBuilder(2, keyPaths.Length);
 
             var c = 0;
             foreach (var keyPath in keyPaths)
             {
                 values[0, c] = keyPath;
-                values[1, c] = ExLibrisUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                values[1, c] = joa.GetJsonValue(keyPath);
                 ++c;
             }
 
-            return values;
+            return values.BuildExcelMatrix();
         }
 
-        private static object CreateJsonTable(List<object> jarray)
+        private static object[,] CreateJsonTable(List<object> jarray, ExcelValueConverter valueConverter)
         {
             var joas = jarray
                 .Select(joae => new JsonObjectAccessor(joae))
@@ -239,12 +239,12 @@ namespace ExLibris.Json
             .Distinct()
             .ToList();
 
-            var values = new object[joas.Count + 1, keyPaths.Count];
+            var values = valueConverter.GetExcelMatrixBuilder(joas.Count + 1, keyPaths.Count);
             {
                 var c = 0;
                 foreach (var keyPath in keyPaths)
                 {
-                    values[0, c] = ExLibrisUtility.ToExcelValue(keyPath);
+                    values[0, c] = keyPath;
                     ++c;
                 }
             }
@@ -255,13 +255,13 @@ namespace ExLibris.Json
                 var c = 0;
                 foreach (var keyPath in keyPaths)
                 {
-                    values[r, c] = ExLibrisUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                    values[r, c] = joa.GetJsonValue(keyPath);
                     ++c;
                 }
                 ++r;
             }
 
-            return values;
+            return values.BuildExcelMatrix();
         }
 
         private static object ObserveJsonObjectHandle(

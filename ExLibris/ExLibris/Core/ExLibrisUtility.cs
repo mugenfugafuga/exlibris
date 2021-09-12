@@ -63,10 +63,6 @@ namespace ExLibris.Core
                 () => FuncOrNAIfThrown(() =>objectFunction())
                 );
 
-        public static object NullIfEmpty(object value) => IsExcelEmpty(value) ? null : value;
-
-        public static object ToExcelValue(object value) => value == null ? ExcelEmpty.Value : value;
-
         public static IExcelObservable FuncOrObjservableNAIfThrown<T>(Func<T> func) where T : IExcelObservable
         {
             try

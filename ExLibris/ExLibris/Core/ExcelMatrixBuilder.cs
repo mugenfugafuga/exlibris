@@ -13,13 +13,7 @@ namespace ExLibris.Core
             this.evConverter = evConverter;
             this.matrix = new List<List<object>>();
 
-            ResizeColumn(rowSize, columnSize);
-        }
-
-        public ExcelMatrixBuilder(ExcelValueConverter evConverter)
-        {
-            this.evConverter = evConverter;
-            this.matrix = new List<List<object>>();
+            ResizeColumn(rowSize - 1, columnSize - 1);
         }
 
         public ExcelMatrixBuilder AddValue(int row, int column, object value)

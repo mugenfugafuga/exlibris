@@ -16,23 +16,25 @@ namespace ExLibris.Context
 
             return ExLibrisUtility.RunAsync(
                 nameof(ShowDefaultConfiguration),
-                () => ToJsonKeyValues(context.DefaultExLibrisConfiguration),
+                () => ToJsonKeyValues(
+                    context.DefaultExLibrisConfiguration,
+                    ExLibrisUtility.GetExcelValueConverter(context.DefaultExLibrisConfiguration)),
                 null);
         }
 
-        private static object[,] ToJsonKeyValues(ExLibrisConfiguration configuration)
+        private static object[,] ToJsonKeyValues(ExLibrisConfiguration configuration, ExcelValueConverter valueConverter)
         {
             var values = new JsonObjectAccessor(JsonObjectSerialiser.ToJsonObject(configuration)).GetJsonValues().ToList();
 
-            var excelvalues = new object[values.Count, 2];
+            var mb = valueConverter.GetExcelMatrixBuilder(values.Count, 2);
 
             for (var i = 0; i < values.Count; ++i)
             {
-                excelvalues[i, 0] = values[i].KeyPath;
-                excelvalues[i, 1] = ExLibrisUtility.ToExcelValue(values[i].Value);
+                mb[i, 0] = values[i].KeyPath;
+                mb[i, 1] = values[i].Value;
             }
 
-            return excelvalues;
+            return mb.BuildExcelMatrix();
         }
 
     }
