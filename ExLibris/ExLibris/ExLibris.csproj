@@ -77,6 +77,7 @@
     <Compile Include="Core\ObjectRepository.cs" />
     <Compile Include="Core\ToExcelValue.cs" />
     <Compile Include="ExLibrisContext.cs" />
+    <Compile Include="ExLibrisFunctions.cs" />
     <Compile Include="Json\JsonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

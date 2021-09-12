@@ -69,5 +69,16 @@ namespace ExLibris.Core
 
         public static ExcelValueConverter GetExcelValueConverter(ExLibrisConfiguration configuration)
             => new ExcelValueConverter(configuration.ExcelValueConfiguration);
+
+        public static object ObserveObjectHandle(
+               string collerFunctionName,
+               ObjectRepository objectRepository,
+               Func<object> objectFunc,
+               params object[] paramObjects)
+               => ExcelAsyncUtil.Observe(
+                       collerFunctionName,
+                       paramObjects,
+                       () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() => new ObjectHandle(objectRepository, objectFunc()))
+                       );
     }
 }

@@ -45,7 +45,7 @@ namespace ExLibris.Json
             }
         }
 
-        private static object CreateJsonObjectByMatrix(ExcelMatrixAccessor matrix, ExLibrisContext context)
+        internal static object CreateJsonObjectByMatrix(ExcelMatrixAccessor matrix, ExLibrisContext context)
         {
             var job = new JsonObjectBuilder(context.ObjectRepository);
 
