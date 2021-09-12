@@ -11,8 +11,7 @@ namespace ExLibris.Json
     {
         [ExcelFunction(
             Name = "ExLibris.Json.CreateJsonObject",
-            Category = "ExLibris.Json"
-            )]
+            Category = "ExLibris.Json")]
         public static object CreateJsonObject(object param)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -75,13 +74,12 @@ namespace ExLibris.Json
 
         [ExcelFunction(
             Name = "ExLibris.Json.ShowJsonText",
-            Category = "ExLibris.Json"
-            )]
+            Category = "ExLibris.Json")]
         public static object ShowJsonText(string objectHandle, bool pretty)
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.ObserveExcelObservableSimply(
+            return ExcelDnaUtility.ObserveExcelObservableDoNothingOnDisposing(
                 nameof(ShowJsonText),
                 () => pretty ?
                         JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
@@ -91,8 +89,7 @@ namespace ExLibris.Json
 
         [ExcelFunction(
             Name = "ExLibris.Json.GetJsonValue",
-            Category = "ExLibris.Json"
-            )]
+            Category = "ExLibris.Json")]
         public static object GetJsonValue(string objectHandle, string keyPath)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -111,7 +108,7 @@ namespace ExLibris.Json
                     }
                     else
                     {
-                        return ExcelDnaUtility.NewSimpleExcelObservable(ExcelDnaUtility.ToExcelValue(value));
+                        return ExcelDnaUtility.NewExcelObservableDoNothingOnDisposing(ExcelDnaUtility.ToExcelValue(value));
                     }
                 })
                 );
@@ -119,13 +116,12 @@ namespace ExLibris.Json
 
         [ExcelFunction(
             Name = "ExLibris.Json.GetJsonKeyValues",
-            Category = "ExLibris.Json"
-            )]
+            Category = "ExLibris.Json")]
         public static object GetJsonKeyValues(string objectHandle)
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.ObserveExcelObservableSimply(
+            return ExcelDnaUtility.ObserveExcelObservableDoNothingOnDisposing(
                 nameof(GetJsonKeyValues),
                 () => CreateJsonKeyValueTable(context.ObjectRepository.GetObject(objectHandle)),
                 objectHandle);
@@ -148,8 +144,7 @@ namespace ExLibris.Json
 
         [ExcelFunction(
             Name = "ExLibris.Json.CreateJsonArray",
-            Category = "ExLibris.Json"
-            )]
+            Category = "ExLibris.Json")]
         public static object CreateJsonArray(object[,] param)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -188,13 +183,12 @@ namespace ExLibris.Json
 
         [ExcelFunction(
             Name = "ExLibris.Json.GetJsonTable",
-            Category = "ExLibris.Json"
-            )]
+            Category = "ExLibris.Json")]
         public static object GetJsonTable(string objectHandle)
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.ObserveExcelObservableSimply(
+            return ExcelDnaUtility.ObserveExcelObservableDoNothingOnDisposing(
                 nameof(GetJsonTable),
                 () =>
                 {

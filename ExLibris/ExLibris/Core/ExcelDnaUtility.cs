@@ -45,16 +45,16 @@ namespace ExLibris.Core
             }
         }
 
-        public static IExcelObservable NewSimpleExcelObservable(object value) => new SimpleExcelObservable(value);
+        public static IExcelObservable NewExcelObservableDoNothingOnDisposing(object value) => new ExcelObservableDoNothingOnDisposing(value);
 
-        public static object ObserveExcelObservableSimply(
+        public static object ObserveExcelObservableDoNothingOnDisposing(
             string callerFunctionName,
             Func<object> objectFunction,
             params object[] parameters)
             => ExcelAsyncUtil.Observe(
                 callerFunctionName,
                 parameters,
-                () => FuncOrNAIfThrown(() => NewSimpleExcelObservable(objectFunction()))
+                () => FuncOrNAIfThrown(() => NewExcelObservableDoNothingOnDisposing(objectFunction()))
                 );
 
         public static object NullIfEmpty(object value) => IsEmpty(value) ? null : value;
@@ -69,7 +69,7 @@ namespace ExLibris.Core
             }
             catch (Exception)
             {
-                return NewSimpleExcelObservable(ExcelError.ExcelErrorNA);
+                return NewExcelObservableDoNothingOnDisposing(ExcelError.ExcelErrorNA);
             }
         }
 
@@ -81,15 +81,15 @@ namespace ExLibris.Core
             }
             catch (Exception)
             {
-                return NewSimpleExcelObservable(ExcelError.ExcelErrorNA);
+                return NewExcelObservableDoNothingOnDisposing(ExcelError.ExcelErrorNA);
             }
         }
 
-        class SimpleExcelObservable : IExcelObservable, IDisposable
+        class ExcelObservableDoNothingOnDisposing : IExcelObservable, IDisposable
         {
             private object value;
 
-            public SimpleExcelObservable(object value)
+            public ExcelObservableDoNothingOnDisposing(object value)
             {
                 this.value = value;
             }
