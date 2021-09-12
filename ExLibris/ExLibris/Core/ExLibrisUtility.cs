@@ -3,10 +3,16 @@ using System;
 
 namespace ExLibris.Core
 {
-    static class ExcelDnaUtility
+    static class ExLibrisUtility
     {
-        public static bool IsMissingOrError(object obj) => obj is ExcelMissing || obj is ExcelError;
-        public static bool IsEmpty(object obj) => obj is ExcelEmpty;
+        public static bool IsMissingOrError(object obj) => IsExcelMissing(obj) || IsExcelError(obj);
+        
+        public static bool IsExcelMissing(object obj) => obj is ExcelMissing;
+
+        public static bool IsExcelError(object obj) => obj is ExcelError;
+
+        public static bool IsExcelEmpty(object obj) => obj is ExcelEmpty;
+
 
         public static void ThrowIfMissingOrError(object obj, Func<string> name)
         {
@@ -18,7 +24,7 @@ namespace ExLibris.Core
 
         public static void ThrowIfMissingOrErrorOrEmpty(object obj, Func<string> name)
         {
-            if (IsMissingOrError(obj) || IsEmpty(obj))
+            if (IsMissingOrError(obj) || IsExcelEmpty(obj))
             {
                 throw new Exception($"{name()} is missing or error or empty.");
             }
@@ -57,7 +63,7 @@ namespace ExLibris.Core
                 () => FuncOrNAIfThrown(() =>objectFunction())
                 );
 
-        public static object NullIfEmpty(object value) => IsEmpty(value) ? null : value;
+        public static object NullIfEmpty(object value) => IsExcelEmpty(value) ? null : value;
 
         public static object ToExcelValue(object value) => value == null ? ExcelEmpty.Value : value;
 
@@ -92,5 +98,8 @@ namespace ExLibris.Core
                 return this;
             }
         }
+
+        public static ExcelValueConverter GetExcelValueConverter(ExLibrisConfiguration configuration)
+            => new ExcelValueConverter(configuration.ExcelValueConfiguration);
     }
 }

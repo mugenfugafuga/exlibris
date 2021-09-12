@@ -7,5 +7,7 @@ namespace ExLibris
         public static ExLibrisContext DefaultContext = new ExLibrisContext();
 
         public ObjectRepository ObjectRepository { get; set; } = new ObjectRepository();
+
+        public ExLibrisConfiguration DefaultExLibrisConfiguration { get; set; } = new ExLibrisConfiguration();
     }
 }

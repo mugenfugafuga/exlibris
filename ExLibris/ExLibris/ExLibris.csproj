@@ -38,6 +38,12 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.4.0\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
@@ -55,13 +61,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\ExcelDnaUtility.cs" />
+    <Compile Include="Context\ExLibrisContextFunctions.cs" />
+    <Compile Include="Core\ExcelMatrixAccessor.cs" />
+    <Compile Include="Core\ExcelMatrixBuilder.cs" />
+    <Compile Include="Core\ExLibrisUtility.cs" />
+    <Compile Include="Core\ExcelValueConverter.cs" />
+    <Compile Include="Core\ExLibrisConfiguration.cs" />
+    <Compile Include="Core\ExcelValueConfiguration.cs" />
+    <Compile Include="Core\ExcelValueTo.cs" />
     <Compile Include="Core\Json\JsonObjectAccessor.cs" />
     <Compile Include="Core\Json\JsonObjectBuilder.cs" />
     <Compile Include="Core\Json\JsonObjectSerialiser.cs" />
     <Compile Include="Core\Json\JsonUtility.cs" />
     <Compile Include="Core\ObjectHandle.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
+    <Compile Include="Core\ToExcelValue.cs" />
     <Compile Include="ExLibrisContext.cs" />
     <Compile Include="Json\JsonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

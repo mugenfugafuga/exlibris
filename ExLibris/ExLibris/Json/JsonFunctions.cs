@@ -25,7 +25,7 @@ namespace ExLibris.Json
 
         private static object CreateJsonObject(object param, ExLibrisContext context)
         {
-            ExcelDnaUtility.ThrowIfMissingOrError(param, nameof(param));
+            ExLibrisUtility.ThrowIfMissingOrError(param, nameof(param));
 
             if (param is object[,])
             {
@@ -39,7 +39,7 @@ namespace ExLibris.Json
 
             {
                 return new JsonObjectBuilder(context.ObjectRepository)
-                            .SetOnlyRootValue(ExcelDnaUtility.NullIfEmpty(param))
+                            .SetOnlyRootValue(ExLibrisUtility.NullIfEmpty(param))
                             .BuildJsonObject();
             }
         }
@@ -52,13 +52,13 @@ namespace ExLibris.Json
 
             for (var r = 0; r < rsize; ++r)
             {
-                ExcelDnaUtility.ThrowIfMissingOrErrorOrEmpty(matrix[r, 0], () => $"matrix[{r}][0]");
-                ExcelDnaUtility.ThrowIfMissingOrError(matrix[r, 1], () => $"matrix[{r}][1]");
+                ExLibrisUtility.ThrowIfMissingOrErrorOrEmpty(matrix[r, 0], () => $"matrix[{r}][0]");
+                ExLibrisUtility.ThrowIfMissingOrError(matrix[r, 1], () => $"matrix[{r}][1]");
 
-                var keypath = (string)ExcelDnaUtility.NullIfEmpty(matrix[r, 0]);
-                var value = ExcelDnaUtility.NullIfEmpty(matrix[r, 1]);
+                var keypath = (string)ExLibrisUtility.NullIfEmpty(matrix[r, 0]);
+                var value = ExLibrisUtility.NullIfEmpty(matrix[r, 1]);
 
-                ExcelDnaUtility.ThrowIfMissingOrError(value, () => $"matrix[{r}][1]");
+                ExLibrisUtility.ThrowIfMissingOrError(value, () => $"matrix[{r}][1]");
 
                 job.AddJsonValue(keypath, value);
             }
@@ -67,7 +67,7 @@ namespace ExLibris.Json
         }
 
         private static object CreateJsonObjectByJsonText(string jsonText, ExLibrisContext context)
-            => JsonObjectSerialiser.ToJsonObject(jsonText) ??
+            => JsonObjectSerialiser.JsonTextToJsonObject(jsonText) ??
                     new JsonObjectBuilder(context.ObjectRepository)
                     .SetOnlyRootValue(jsonText)
                     .BuildJsonObject();
@@ -79,7 +79,7 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.RunAsync(
+            return ExLibrisUtility.RunAsync(
                 nameof(ShowJsonText),
                 () => pretty ?
                         JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
@@ -97,7 +97,7 @@ namespace ExLibris.Json
             return ExcelAsyncUtil.Observe(
                 nameof(GetJsonValue),
                 new object[] { objectHandle, keyPath, },
-                () => ExcelDnaUtility.FuncOrObjservableNAIfThrown(() =>
+                () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() =>
                 {
                     var jo = context.ObjectRepository.GetObject(objectHandle);
                     var value = new JsonObjectAccessor(jo).GetJsonValue(keyPath);
@@ -108,7 +108,7 @@ namespace ExLibris.Json
                     }
                     else
                     {
-                        return ExcelDnaUtility.NewExcelObservableDoNothingOnDisposing(ExcelDnaUtility.ToExcelValue(value));
+                        return ExLibrisUtility.NewExcelObservableDoNothingOnDisposing(ExLibrisUtility.ToExcelValue(value));
                     }
                 })
                 );
@@ -121,7 +121,7 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.RunAsync(
+            return ExLibrisUtility.RunAsync(
                 nameof(GetJsonKeyValues),
                 () => CreateJsonKeyValueTable(context.ObjectRepository.GetObject(objectHandle)),
                 objectHandle);
@@ -136,7 +136,7 @@ namespace ExLibris.Json
             for (var i = 0; i < values.Count; ++i)
             {
                 excelvalues[i, 0] = values[i].KeyPath;
-                excelvalues[i, 1] = ExcelDnaUtility.ToExcelValue(values[i].Value);
+                excelvalues[i, 1] = ExLibrisUtility.ToExcelValue(values[i].Value);
             }
 
             return excelvalues;
@@ -162,7 +162,7 @@ namespace ExLibris.Json
             var csize = param.GetLength(1);
 
             var keys = Enumerable.Range(0, csize)
-            .Select(i => (string)ExcelDnaUtility.NullIfEmpty(param[0, i]))
+            .Select(i => (string)ExLibrisUtility.NullIfEmpty(param[0, i]))
             .ToArray();
 
             var jo = new List<object>();
@@ -172,7 +172,7 @@ namespace ExLibris.Json
                 var job = new JsonObjectBuilder(context.ObjectRepository);
                 for (var c = 0; c < csize; ++c)
                 {
-                    job.AddJsonValue(keys[c], ExcelDnaUtility.NullIfEmpty(param[r, c]));
+                    job.AddJsonValue(keys[c], ExLibrisUtility.NullIfEmpty(param[r, c]));
                 }
                 jo.Add(job.BuildJsonObject());
             }
@@ -188,7 +188,7 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.RunAsync(
+            return ExLibrisUtility.RunAsync(
                 nameof(GetJsonTable),
                 () =>
                 {
@@ -203,7 +203,7 @@ namespace ExLibris.Json
                         return CreateJsonTable(JsonUtility.CastJsonArray(jo));
                     }
 
-                    return ExcelDnaUtility.ToExcelValue(jo);
+                    return ExLibrisUtility.ToExcelValue(jo);
                 },
                 objectHandle);
         }
@@ -221,7 +221,7 @@ namespace ExLibris.Json
             foreach (var keyPath in keyPaths)
             {
                 values[0, c] = keyPath;
-                values[1, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                values[1, c] = ExLibrisUtility.ToExcelValue(joa.GetJsonValue(keyPath));
                 ++c;
             }
 
@@ -244,7 +244,7 @@ namespace ExLibris.Json
                 var c = 0;
                 foreach (var keyPath in keyPaths)
                 {
-                    values[0, c] = ExcelDnaUtility.ToExcelValue(keyPath);
+                    values[0, c] = ExLibrisUtility.ToExcelValue(keyPath);
                     ++c;
                 }
             }
@@ -255,7 +255,7 @@ namespace ExLibris.Json
                 var c = 0;
                 foreach (var keyPath in keyPaths)
                 {
-                    values[r, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                    values[r, c] = ExLibrisUtility.ToExcelValue(joa.GetJsonValue(keyPath));
                     ++c;
                 }
                 ++r;
@@ -272,7 +272,7 @@ namespace ExLibris.Json
             => ExcelAsyncUtil.Observe(
                     collerFunctionName,
                     paramObjects,
-                    () => ExcelDnaUtility.FuncOrObjservableNAIfThrown(() => JsonUtility.NewJsonObjectHandle(objectRepository, jsonObjectFunc()))
+                    () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() => JsonUtility.NewJsonObjectHandle(objectRepository, jsonObjectFunc()))
                     );
     }
 }
