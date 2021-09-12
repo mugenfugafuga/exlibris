@@ -5,7 +5,7 @@ namespace ExLibris.Core.Json
 {
     public class JsonValueConverter
     {
-        private List<IJsonValueShaper> shapers;
+        private readonly List<IJsonValueShaper> shapers;
 
         public JsonValueConverter(IEnumerable<IJsonValueShaper> shapers)
         {

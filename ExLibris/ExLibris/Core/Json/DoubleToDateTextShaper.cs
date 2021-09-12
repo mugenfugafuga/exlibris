@@ -5,8 +5,8 @@ namespace ExLibris.Core.Json
 {
     class DoubleToDateTextShaper : IJsonValueShaper
     {
-        private string dateFormat;
-        private List<string> keys;
+        private readonly string dateFormat;
+        private readonly List<string> keys;
 
         public DoubleToDateTextShaper(string dateFormat, List<string> keys)
         {

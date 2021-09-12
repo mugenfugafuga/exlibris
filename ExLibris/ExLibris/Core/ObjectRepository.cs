@@ -4,7 +4,7 @@ namespace ExLibris.Core
 {
     public class ObjectRepository
     {
-        private ConcurrentDictionary<string, object> cache = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, object> cache = new ConcurrentDictionary<string, object>();
 
         public void RegisterObject(string key, object obj) => cache.AddOrUpdate(key, obj, (_1, _2) => obj);
 

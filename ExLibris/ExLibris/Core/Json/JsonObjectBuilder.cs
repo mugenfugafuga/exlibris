@@ -8,8 +8,8 @@ namespace ExLibris.Core.Json
     {
         private Dictionary<string, object> shortcut = new Dictionary<string, object>();
         private object root = null;
-        private ObjectRepository objectRepository;
-        private JsonValueConverter jsonValueConverter;
+        private readonly ObjectRepository objectRepository;
+        private readonly JsonValueConverter jsonValueConverter;
 
         public JsonObjectBuilder(ObjectRepository objectRepository, JsonValueConverter jsonValueConverter)
         {

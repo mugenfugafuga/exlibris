@@ -5,7 +5,7 @@ namespace ExLibris.Core.Json
 {
     public struct JsonObjectAccessor
     {
-        private object jsonObject;
+        private readonly object jsonObject;
 
         public JsonObjectAccessor(object jsonObject)
         {
