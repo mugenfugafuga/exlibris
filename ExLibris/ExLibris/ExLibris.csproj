@@ -61,7 +61,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Context\ExLibrisContextFunctions.cs" />
     <Compile Include="Core\ExcelMatrixAccessor.cs" />
     <Compile Include="Core\ExcelMatrixBuilder.cs" />
     <Compile Include="Core\ExLibrisUtility.cs" />
