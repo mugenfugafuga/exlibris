@@ -1,6 +1,7 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -21,41 +22,31 @@ namespace ExLibris.Json
 
             if (param is object[,])
             {
-                return ExcelAsyncUtil.Observe(
+                return ObserveJsonObjectHandle(
                     nameof(CreateJsonObject),
-                    new object[] { param, },
-                    () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
-                    {
-                        var o = CreateJsonObjectByMatrix((object[,])param, context);
-                        return JsonUtility.NewJsonObjectHandle(context.ObjectRepository, o);
-                    })
-                    );
+                    context.ObjectRepository,
+                    () => CreateJsonObjectByMatrix((object[,])param, context),
+                    param);
             }
 
             if (param is string)
             {
-                return ExcelAsyncUtil.Observe(
+                return ObserveJsonObjectHandle(
                     nameof(CreateJsonObject),
-                    new object[] { param, },
-                    () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
-                    {
-                        var o = CreateJsonObjectByJsonText((string)param, context);
-                        return JsonUtility.NewJsonObjectHandle(context.ObjectRepository, o);
-                    })
-                    );
+                    context.ObjectRepository,
+                    () => CreateJsonObjectByJsonText((string)param, context),
+                    param);
             }
 
-            return ExcelAsyncUtil.Observe(
-                nameof(CreateJsonObject),
-                new object[] { param, },
-                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
-                {
-                    var o = new JsonObjectBuilder(context.ObjectRepository)
-                        .SetOnlyRootValue(ExcelDnaUtility.NullIfEmpty(param))
-                        .BuildJsonObject();
-                    return JsonUtility.NewJsonObjectHandle(context.ObjectRepository, o);
-                })
-                );
+            {
+                return ObserveJsonObjectHandle(
+                    nameof(CreateJsonObject),
+                    context.ObjectRepository,
+                    () => new JsonObjectBuilder(context.ObjectRepository)
+                            .SetOnlyRootValue(ExcelDnaUtility.NullIfEmpty(param))
+                            .BuildJsonObject(),
+                    param);
+            }
         }
 
         private static object CreateJsonObjectByMatrix(object[,] matrix, ExLibrisContext context)
@@ -69,7 +60,7 @@ namespace ExLibris.Json
                 ExcelDnaUtility.ThrowIfMissingOrErrorOrEmpty(matrix[r, 0], () => $"matrix[{r}][0]");
                 ExcelDnaUtility.ThrowIfMissingOrError(matrix[r, 1], () => $"matrix[{r}][1]");
 
-                var keypath = (string)matrix[r, 0];
+                var keypath = (string)ExcelDnaUtility.NullIfEmpty(matrix[r, 0]);
                 var value = ExcelDnaUtility.NullIfEmpty(matrix[r, 1]);
 
                 ExcelDnaUtility.ThrowIfMissingOrError(value, () => $"matrix[{r}][1]");
@@ -81,13 +72,10 @@ namespace ExLibris.Json
         }
 
         private static object CreateJsonObjectByJsonText(string jsonText, ExLibrisContext context)
-        {
-            return JsonObjectSerialiser.ToJsonObject(jsonText) ??
+            => JsonObjectSerialiser.ToJsonObject(jsonText) ??
                     new JsonObjectBuilder(context.ObjectRepository)
                     .SetOnlyRootValue(jsonText)
                     .BuildJsonObject();
-        }
-
 
         [ExcelFunction(
             Name = "ExLibris.Json.ShowJsonText",
@@ -177,11 +165,10 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelAsyncUtil.Observe(
-                nameof(GetJsonKeyValues),
-                new object[] { param, },
-                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
-                {
+            return ObserveJsonObjectHandle(
+                nameof(CreateJsonArray),
+                context.ObjectRepository,
+                () => {
                     var rsize = param.GetLength(0);
                     var csize = param.GetLength(1);
 
@@ -201,9 +188,9 @@ namespace ExLibris.Json
                         jo.Add(job.BuildJsonObject());
                     }
 
-                    return JsonUtility.NewJsonObjectHandle(context.ObjectRepository, jo);
-                })
-                );
+                    return jo;
+                },
+                param);
         }
 
         [ExcelFunction(
@@ -280,5 +267,19 @@ namespace ExLibris.Json
                 })
                 );
         }
+
+        private static object ObserveJsonObjectHandle(
+            string collerFunctionName,
+            ObjectRepository objectRepository,
+            Func<object> jsonObjectFunc,
+            params object[] paramObjects)
+            => ExcelAsyncUtil.Observe(
+                    collerFunctionName,
+                    paramObjects,
+                    () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                    {
+                        return JsonUtility.NewJsonObjectHandle(objectRepository, jsonObjectFunc());
+                    })
+                    );
     }
 }
