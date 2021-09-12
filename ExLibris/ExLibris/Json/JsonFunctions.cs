@@ -14,7 +14,15 @@ namespace ExLibris.Json
             Category = "ExLibris.Json"
             )]
         public static object CreateJsonObject(object param)
-            => ExcelDnaUtility.FuncOrNAIfThrown(() => CreateJsonObject(param, ExLibrisContext.DefaultContext));
+        {
+            var context = ExLibrisContext.DefaultContext;
+
+            return ObserveJsonObjectHandle(
+                nameof(CreateJsonObject),
+                context.ObjectRepository,
+                () => CreateJsonObject(param, context),
+                param);
+        }
 
         private static object CreateJsonObject(object param, ExLibrisContext context)
         {
@@ -22,30 +30,18 @@ namespace ExLibris.Json
 
             if (param is object[,])
             {
-                return ObserveJsonObjectHandle(
-                    nameof(CreateJsonObject),
-                    context.ObjectRepository,
-                    () => CreateJsonObjectByMatrix((object[,])param, context),
-                    param);
+                return CreateJsonObjectByMatrix((object[,])param, context);
             }
 
             if (param is string)
             {
-                return ObserveJsonObjectHandle(
-                    nameof(CreateJsonObject),
-                    context.ObjectRepository,
-                    () => CreateJsonObjectByJsonText((string)param, context),
-                    param);
+                return CreateJsonObjectByJsonText((string)param, context);
             }
 
             {
-                return ObserveJsonObjectHandle(
-                    nameof(CreateJsonObject),
-                    context.ObjectRepository,
-                    () => new JsonObjectBuilder(context.ObjectRepository)
+                return new JsonObjectBuilder(context.ObjectRepository)
                             .SetOnlyRootValue(ExcelDnaUtility.NullIfEmpty(param))
-                            .BuildJsonObject(),
-                    param);
+                            .BuildJsonObject();
             }
         }
 
@@ -131,22 +127,23 @@ namespace ExLibris.Json
 
             return ExcelDnaUtility.ObserveExcelObservableSimply(
                 nameof(GetJsonKeyValues),
-                () =>
-                {
-                    var jo = context.ObjectRepository.GetObject(objectHandle);
-                    var values = new JsonObjectAccessor(jo).GetJsonValues().ToList();
-
-                    var excelvalues = new object[values.Count, 2];
-
-                    for (var i = 0; i < values.Count; ++i)
-                    {
-                        excelvalues[i, 0] = values[i].KeyPath;
-                        excelvalues[i, 1] = ExcelDnaUtility.ToExcelValue(values[i].Value);
-                    }
-
-                    return excelvalues;
-                },
+                () => CreateJsonKeyValueTable(context.ObjectRepository.GetObject(objectHandle)),
                 objectHandle);
+        }
+
+        private static object[,] CreateJsonKeyValueTable(object jo)
+        {
+            var values = new JsonObjectAccessor(jo).GetJsonValues().ToList();
+
+            var excelvalues = new object[values.Count, 2];
+
+            for (var i = 0; i < values.Count; ++i)
+            {
+                excelvalues[i, 0] = values[i].KeyPath;
+                excelvalues[i, 1] = ExcelDnaUtility.ToExcelValue(values[i].Value);
+            }
+
+            return excelvalues;
         }
 
         [ExcelFunction(
@@ -160,30 +157,34 @@ namespace ExLibris.Json
             return ObserveJsonObjectHandle(
                 nameof(CreateJsonArray),
                 context.ObjectRepository,
-                () => {
-                    var rsize = param.GetLength(0);
-                    var csize = param.GetLength(1);
-
-                    var keys = Enumerable.Range(0, csize)
-                    .Select(i => (string)ExcelDnaUtility.NullIfEmpty(param[0, i]))
-                    .ToArray();
-
-                    var jo = new List<object>();
-
-                    for (var r = 1; r < rsize; ++r)
-                    {
-                        var job = new JsonObjectBuilder(context.ObjectRepository);
-                        for (var c = 0; c < csize; ++c)
-                        {
-                            job.AddJsonValue(keys[c], ExcelDnaUtility.NullIfEmpty(param[r, c]));
-                        }
-                        jo.Add(job.BuildJsonObject());
-                    }
-
-                    return jo;
-                },
+                () => CreateJsonArray(param, context),
                 param);
         }
+
+        private static List<object> CreateJsonArray(object[,] param, ExLibrisContext context)
+        {
+            var rsize = param.GetLength(0);
+            var csize = param.GetLength(1);
+
+            var keys = Enumerable.Range(0, csize)
+            .Select(i => (string)ExcelDnaUtility.NullIfEmpty(param[0, i]))
+            .ToArray();
+
+            var jo = new List<object>();
+
+            for (var r = 1; r < rsize; ++r)
+            {
+                var job = new JsonObjectBuilder(context.ObjectRepository);
+                for (var c = 0; c < csize; ++c)
+                {
+                    job.AddJsonValue(keys[c], ExcelDnaUtility.NullIfEmpty(param[r, c]));
+                }
+                jo.Add(job.BuildJsonObject());
+            }
+
+            return jo;
+        }
+
 
         [ExcelFunction(
             Name = "ExLibris.Json.GetJsonTable",
