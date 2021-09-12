@@ -1,6 +1,7 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.Json;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ExLibris.Json
@@ -164,6 +165,118 @@ namespace ExLibris.Json
                     }
 
                     return ExcelDnaUtility.NewSimpleExcelObservable(excelvalues);
+                })
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.Json.CreateJsonArray",
+            Category = "ExLibris.Json"
+            )]
+        public static object CreateJsonArray(object[,] param)
+        {
+            var context = ExLibrisContext.DefaultContext;
+
+            return ExcelAsyncUtil.Observe(
+                nameof(GetJsonKeyValues),
+                new object[] { param, },
+                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                {
+                    var rsize = param.GetLength(0);
+                    var csize = param.GetLength(1);
+
+                    var keys = Enumerable.Range(0, csize)
+                    .Select(i => (string)ExcelDnaUtility.NullIfEmpty(param[0, i]))
+                    .ToArray();
+
+                    var jo = new List<object>();
+
+                    for (var r = 1; r < rsize; ++r)
+                    {
+                        var job = new JsonObjectBuilder(context.ObjectRepository);
+                        for (var c = 0; c < csize; ++c)
+                        {
+                            job.AddJsonValue(keys[c], ExcelDnaUtility.NullIfEmpty(param[r, c]));
+                        }
+                        jo.Add(job.BuildJsonObject());
+                    }
+
+                    return JsonUtility.NewJsonObjectHandle(context.ObjectRepository, jo);
+                })
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.Json.GetJsonTable",
+            Category = "ExLibris.Json"
+            )]
+        public static object GetJsonTable(string objectHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+
+            return ExcelAsyncUtil.Observe(
+                nameof(GetJsonKeyValues),
+                new object[] { objectHandle, },
+                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                {
+                    var jo = context.ObjectRepository.GetObject(objectHandle);
+
+                    if (JsonUtility.IsJsonDictionary(jo))
+                    {
+                        var joa = new JsonObjectAccessor(jo);
+                        var keyPaths = joa.GetJsonValues()
+                        .Select(kv => kv.KeyPath)
+                        .ToArray();
+
+                        var values = new object[2, keyPaths.Length];
+
+                        var c = 0;
+                        foreach (var keyPath in keyPaths)
+                        {
+                            values[0, c] = keyPath;
+                            values[1, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                            ++c;
+                        }
+
+                        return ExcelDnaUtility.NewSimpleExcelObservable(values);
+                    }
+                    else if (JsonUtility.IsJsonArray(jo))
+                    {
+                        var joas = JsonUtility.CastJsonArray(jo)
+                            .Select(joae => new JsonObjectAccessor(joae))
+                            .ToList();
+
+                        var keyPaths = joas
+                        .SelectMany(joa => joa.GetJsonValues().Select(kv => kv.KeyPath))
+                        .Distinct()
+                        .ToList();
+
+                        var values = new object[joas.Count + 1, keyPaths.Count];
+                        {
+                            var c = 0;
+                            foreach (var keyPath in keyPaths)
+                            {
+                                values[0, c] = ExcelDnaUtility.ToExcelValue(keyPath);
+                                ++c;
+                            }
+                        }
+
+                        var r = 1;
+                        foreach (var joa in joas)
+                        {
+                            var c = 0;
+                            foreach (var keyPath in keyPaths)
+                            {
+                                values[r, c] = ExcelDnaUtility.ToExcelValue(joa.GetJsonValue(keyPath));
+                                ++c;
+                            }
+                            ++r;
+                        }
+
+                        return ExcelDnaUtility.NewSimpleExcelObservable(values);
+                    }
+
+                    return ExcelDnaUtility.NewSimpleExcelObservable(ExcelDnaUtility.ToExcelValue(jo));
                 })
                 );
         }
