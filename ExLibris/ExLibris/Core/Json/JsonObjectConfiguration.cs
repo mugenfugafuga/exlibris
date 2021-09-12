@@ -7,7 +7,7 @@ namespace ExLibris.Core.Json
     public class JsonObjectConfiguration
     {
         [DataMember(Name = "double_to_date_text", Order = 120)]
-        public List<DoubleToDateTextSetting> DoubleToDateTextSettings { get; set; } = new List<DoubleToDateTextSetting> { new DoubleToDateTextSetting(), };
+        public List<DoubleToDateTextSetting> DoubleToDateTextSettings { get; set; }
 
         public JsonValueConverter GetJsonValueConverter() => new JsonValueConverter(GetValueShapers());
 
@@ -24,9 +24,9 @@ namespace ExLibris.Core.Json
     public class DoubleToDateTextSetting
     {
         [DataMember(Name = "date_format", Order = 10)]
-        public string DateFormat { get; set; } = "yyyy-MM-dd";
+        public string DateFormat { get; set; }
         
         [DataMember(Name = "keys", Order = 20)]
-        public List<string> TargetKeys { get; set; } = new List<string> { "date", };
+        public List<string> TargetKeys { get; set; }
     }
 }
