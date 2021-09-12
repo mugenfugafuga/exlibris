@@ -27,6 +27,19 @@ namespace ExLibris
                 },
                 matrix
                 );
+       }
+
+        public static object DumpObject(string objectHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var configuration = context.DefaultExLibrisConfiguration;
+
+            return ExLibrisUtility.RunAsync(
+                nameof(DumpObject),
+                () => JsonFunctions.CreateJsonKeyValueTable(
+                    JsonObjectSerialiser.ToJsonObject(context.ObjectRepository.GetObject(objectHandle)),
+                    ExLibrisUtility.GetExcelValueConverter(configuration)),
+                objectHandle);
 
         }
     }

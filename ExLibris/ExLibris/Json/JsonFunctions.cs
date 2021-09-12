@@ -125,7 +125,7 @@ namespace ExLibris.Json
                 objectHandle);
         }
 
-        private static object[,] CreateJsonKeyValueTable(object jo, ExcelValueConverter valueConverter)
+        internal static object[,] CreateJsonKeyValueTable(object jo, ExcelValueConverter valueConverter)
         {
             var values = new JsonObjectAccessor(jo).GetJsonValues().ToList();
 
