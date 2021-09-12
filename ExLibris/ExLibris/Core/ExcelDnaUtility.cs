@@ -47,33 +47,21 @@ namespace ExLibris.Core
 
         public static IExcelObservable NewExcelObservableDoNothingOnDisposing(object value) => new ExcelObservableDoNothingOnDisposing(value);
 
-        public static object ObserveExcelObservableDoNothingOnDisposing(
+        public static object RunAsync(
             string callerFunctionName,
             Func<object> objectFunction,
             params object[] parameters)
-            => ExcelAsyncUtil.Observe(
+            => ExcelAsyncUtil.Run(
                 callerFunctionName,
                 parameters,
-                () => FuncOrNAIfThrown(() => NewExcelObservableDoNothingOnDisposing(objectFunction()))
+                () => FuncOrNAIfThrown(() =>objectFunction())
                 );
 
         public static object NullIfEmpty(object value) => IsEmpty(value) ? null : value;
 
         public static object ToExcelValue(object value) => value == null ? ExcelEmpty.Value : value;
 
-        public static IExcelObservable FuncOrNAIfThrown(Func<IExcelObservable> func)
-        {
-            try
-            {
-                return func();
-            }
-            catch (Exception)
-            {
-                return NewExcelObservableDoNothingOnDisposing(ExcelError.ExcelErrorNA);
-            }
-        }
-
-        public static IExcelObservable FuncOrNAIfThrown(Func<ObjectHandle> func)
+        public static IExcelObservable FuncOrObjservableNAIfThrown<T>(Func<T> func) where T : IExcelObservable
         {
             try
             {

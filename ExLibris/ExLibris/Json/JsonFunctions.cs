@@ -79,7 +79,7 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.ObserveExcelObservableDoNothingOnDisposing(
+            return ExcelDnaUtility.RunAsync(
                 nameof(ShowJsonText),
                 () => pretty ?
                         JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
@@ -97,7 +97,7 @@ namespace ExLibris.Json
             return ExcelAsyncUtil.Observe(
                 nameof(GetJsonValue),
                 new object[] { objectHandle, keyPath, },
-                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                () => ExcelDnaUtility.FuncOrObjservableNAIfThrown(() =>
                 {
                     var jo = context.ObjectRepository.GetObject(objectHandle);
                     var value = new JsonObjectAccessor(jo).GetJsonValue(keyPath);
@@ -121,7 +121,7 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.ObserveExcelObservableDoNothingOnDisposing(
+            return ExcelDnaUtility.RunAsync(
                 nameof(GetJsonKeyValues),
                 () => CreateJsonKeyValueTable(context.ObjectRepository.GetObject(objectHandle)),
                 objectHandle);
@@ -188,7 +188,7 @@ namespace ExLibris.Json
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExcelDnaUtility.ObserveExcelObservableDoNothingOnDisposing(
+            return ExcelDnaUtility.RunAsync(
                 nameof(GetJsonTable),
                 () =>
                 {
@@ -272,10 +272,7 @@ namespace ExLibris.Json
             => ExcelAsyncUtil.Observe(
                     collerFunctionName,
                     paramObjects,
-                    () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
-                    {
-                        return JsonUtility.NewJsonObjectHandle(objectRepository, jsonObjectFunc());
-                    })
+                    () => ExcelDnaUtility.FuncOrObjservableNAIfThrown(() => JsonUtility.NewJsonObjectHandle(objectRepository, jsonObjectFunc()))
                     );
     }
 }
