@@ -57,6 +57,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Core\Json\JsonObjectAccessorTests.cs" />
     <Compile Include="Core\Json\JsonObjectBuilderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

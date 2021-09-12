@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\ExcelDnaUtility.cs" />
+    <Compile Include="Core\Json\JsonObjectAccessor.cs" />
     <Compile Include="Core\Json\JsonObjectBuilder.cs" />
     <Compile Include="Core\Json\JsonObjectSerialiser.cs" />
     <Compile Include="Core\Json\JsonUtility.cs" />
