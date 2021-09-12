@@ -6,19 +6,15 @@ namespace ExLibris.Core.Json
 {
     public class JsonObjectBuilder
     {
-        public static readonly ObjectRepository DefaultObjectRepository = new ObjectRepository();
-
         private Dictionary<string, object> shortcut = new Dictionary<string, object>();
         private object root = null;
         private ObjectRepository objectRepository;
+        private JsonValueConverter jsonValueConverter;
 
-        public JsonObjectBuilder() : this(DefaultObjectRepository)
-        {
-        }
-
-        public JsonObjectBuilder(ObjectRepository objectRepository)
+        public JsonObjectBuilder(ObjectRepository objectRepository, JsonValueConverter jsonValueConverter)
         {
             this.objectRepository = objectRepository;
+            this.jsonValueConverter = jsonValueConverter;
         }
 
         public JsonObjectBuilder AddJsonValue(string keyPath, object value)
@@ -43,7 +39,7 @@ namespace ExLibris.Core.Json
             else
             {
                 var jd = JsonUtility.CastJsonDictionary(je);
-                jd[lastkey] = v;
+                jd[lastkey] = jsonValueConverter.Convert(lastkey, v);
 
             }
 

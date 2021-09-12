@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using ExLibris.Core.Json;
+using System.Runtime.Serialization;
 
 namespace ExLibris.Core
 {
@@ -7,5 +8,8 @@ namespace ExLibris.Core
     {
         [DataMember(Name = "excel_value", Order = 10)]
         public ExcelValueConfiguration ExcelValueConfiguration { get; set; } = new ExcelValueConfiguration();
+
+        [DataMember(Name = "json", Order = 110)]
+        public JsonObjectConfiguration jsonObjectConfiguration { get; set; } = new Json.JsonObjectConfiguration();
     }
 }

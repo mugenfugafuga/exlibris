@@ -8,10 +8,17 @@ namespace ExLibris.Core.Json.Tests
     [TestClass()]
     public class JsonObjectAccessorTests
     {
+        private static JsonObjectBuilder NewJsonObjectBuilder()
+        {
+            var context = new ExLibrisContext();
+
+            return new JsonObjectBuilder(context.ObjectRepository, context.DefaultExLibrisConfiguration.jsonObjectConfiguration.GetJsonValueConverter());
+        }
+
         [TestMethod()]
         public void JsonObjectAccessor_GetJsonValues_OnlyTopValue_Test()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(false)
                 .BuildJsonObject();
 
@@ -29,7 +36,7 @@ namespace ExLibris.Core.Json.Tests
             var or = new ObjectRepository();
 
             {
-                var orjo = new JsonObjectBuilder()
+                var orjo = NewJsonObjectBuilder()
                     .AddJsonValue("vstring", "hoge")
                     .AddJsonValue("vint", 42)
                     .AddJsonValue("vdouble", -123.45)
@@ -40,7 +47,7 @@ namespace ExLibris.Core.Json.Tests
                 or.RegisterObject("__jo", orjo);
             }
 
-            var jo = new JsonObjectBuilder(or)
+            var jo = new JsonObjectBuilder(or, new JsonObjectConfiguration().GetJsonValueConverter())
                 .AddJsonValue("elem0", "__jo")
                 .AddJsonValue("elem1.[0]", "__jo")
                 .AddJsonValue("elem2", 42)
@@ -70,7 +77,7 @@ namespace ExLibris.Core.Json.Tests
             var or = new ObjectRepository();
 
             {
-                var orjo = new JsonObjectBuilder()
+                var orjo = NewJsonObjectBuilder()
                     .AddJsonValue("vstring", "hoge")
                     .AddJsonValue("vint", 42)
                     .AddJsonValue("vdouble", -123.45)
@@ -81,7 +88,7 @@ namespace ExLibris.Core.Json.Tests
                 or.RegisterObject("__jo", orjo);
             }
 
-            var jo = new JsonObjectBuilder(or)
+            var jo = new JsonObjectBuilder(or, new JsonObjectConfiguration().GetJsonValueConverter())
                 .AddJsonValue("elem0", "__jo")
                 .AddJsonValue("elem1.[0]", "__jo")
                 .AddJsonValue("elem2", 42)
@@ -100,7 +107,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectAccessor_GetJsonValue_OnlyTopValue_Test()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(false)
                 .BuildJsonObject();
 

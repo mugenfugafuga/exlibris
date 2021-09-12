@@ -11,10 +11,17 @@ namespace ExLibris.Core.Json.Tests
     [TestClass()]
     public class JsonObjectBuilderTests
     {
+        private static JsonObjectBuilder NewJsonObjectBuilder()
+        {
+            var context = new ExLibrisContext();
+
+            return new JsonObjectBuilder(context.ObjectRepository, context.DefaultExLibrisConfiguration.jsonObjectConfiguration.GetJsonValueConverter());
+        }
+
         [TestMethod()]
         public void JsonObjectBuilder_SetOnlyRootValue_String_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue("test")
                 .BuildDynamic();
 
@@ -26,7 +33,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_SetOnlyRootValue_Int_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(42)
                 .BuildDynamic();
 
@@ -39,7 +46,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_SetOnlyRootValue_Double_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(-123.45)
                 .BuildDynamic();
 
@@ -51,7 +58,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_SetOnlyRootValue_True_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(true)
                 .BuildDynamic();
 
@@ -63,7 +70,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_SetOnlyRootValue_False_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(false)
                 .BuildDynamic();
 
@@ -75,7 +82,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_SetOnlyRootValue_Null_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(null)
                 .BuildDynamic();
 
@@ -88,7 +95,7 @@ namespace ExLibris.Core.Json.Tests
         [ExpectedException(typeof(Exception))]
         public void JsonObjectBuilder_SetOnlyRootValue_Twice_Throw_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .SetOnlyRootValue(1)
                 .SetOnlyRootValue(2);
         }
@@ -96,7 +103,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_BuildJsonObject_1layer_Dict_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .AddJsonValue("vstring", "hoge")
                 .AddJsonValue("vint", 42)
                 .AddJsonValue("vdouble", -123.45)
@@ -118,7 +125,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_BuildJsonObject_1layer_Array_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .AddJsonValue("[0]", "hoge")
                 .AddJsonValue("[1]", 42)
                 .AddJsonValue("[2]", -123.45)
@@ -140,7 +147,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_BuildJsonObject_2layer_Dict_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .AddJsonValue("vstring", "hoge")
                 .AddJsonValue("vint", 42)
                 .AddJsonValue("vdouble", -123.45)
@@ -182,7 +189,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_BuildJsonObject_2layer_Array_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .AddJsonValue("[0].vstring", "hoge")
                 .AddJsonValue("[0].vint", 42)
                 .AddJsonValue("[1].vdouble", -123.45)
@@ -214,7 +221,7 @@ namespace ExLibris.Core.Json.Tests
         [TestMethod()]
         public void JsonObjectBuilder_BuildJsonObject_3layer_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .AddJsonValue("vstring", "hoge")
                 .AddJsonValue("vint", 42)
                 .AddJsonValue("vdouble", -123.45)
@@ -257,7 +264,7 @@ namespace ExLibris.Core.Json.Tests
         [ExpectedException(typeof(InvalidCastException))]
         public void JsonObjectBuilder_BuildJsonObject_DifferentObjectType_Throw_Text()
         {
-            var jo = new JsonObjectBuilder()
+            var jo = NewJsonObjectBuilder()
                 .AddJsonValue("elem0.elem1", 1)
                 .AddJsonValue("[0].elem1", 2);
         }
@@ -268,7 +275,7 @@ namespace ExLibris.Core.Json.Tests
             var or = new ObjectRepository();
 
             {
-                var orjo = new JsonObjectBuilder()
+                var orjo = NewJsonObjectBuilder()
                     .AddJsonValue("vstring", "hoge")
                     .AddJsonValue("vint", 42)
                     .AddJsonValue("vdouble", -123.45)
@@ -279,14 +286,14 @@ namespace ExLibris.Core.Json.Tests
                 or.RegisterObject("__jo", orjo);
             }
 
-            var jo0 = new JsonObjectBuilder(or)
+            var jo0 = new JsonObjectBuilder(or, new JsonObjectConfiguration().GetJsonValueConverter())
                 .SetOnlyRootValue("__jo")
                 .BuildJsonObject();
             Assert.AreEqual(
                 @"{""vstring"":""hoge"",""vint"":42,""vdouble"":-123.45,""vtrue"":true,""vfalse"":false}",
                 JsonObjectSerialiser.ToJsonText(jo0));
 
-            var jo1 = new JsonObjectBuilder(or)
+            var jo1 = new JsonObjectBuilder(or, new JsonObjectConfiguration().GetJsonValueConverter())
                 .AddJsonValue("elem0", "__jo")
                 .AddJsonValue("elem1.[0]", "__jo")
                 .AddJsonValue("elem2", 42)

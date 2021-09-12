@@ -21,7 +21,7 @@ namespace ExLibris
                 () =>
                 {
                     var ema = ExLibrisUtility.GetExcelValueConverter(configuration).GetExcelMatrixAccessor(matrix);
-                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, context);
+                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, context, configuration.jsonObjectConfiguration.GetJsonValueConverter());
 
                     return JsonObjectSerialiser.ToObject<ExLibrisConfiguration>(jo);
                 },

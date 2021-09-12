@@ -68,10 +68,14 @@
     <Compile Include="Core\ExLibrisConfiguration.cs" />
     <Compile Include="Core\ExcelValueConfiguration.cs" />
     <Compile Include="Core\ExcelValueTo.cs" />
+    <Compile Include="Core\Json\DoubleToDateTextShaper.cs" />
+    <Compile Include="Core\Json\IJsonValueShaper.cs" />
     <Compile Include="Core\Json\JsonObjectAccessor.cs" />
     <Compile Include="Core\Json\JsonObjectBuilder.cs" />
+    <Compile Include="Core\Json\JsonObjectConfiguration.cs" />
     <Compile Include="Core\Json\JsonObjectSerialiser.cs" />
     <Compile Include="Core\Json\JsonUtility.cs" />
+    <Compile Include="Core\Json\JsonValueConverter.cs" />
     <Compile Include="Core\ObjectHandle.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
     <Compile Include="Core\ToExcelValue.cs" />
