@@ -43,6 +43,7 @@ namespace ExLibris.Core.Json
 
         public static bool IsJsonArray(object obj) => obj is List<object>;
 
+        public static bool IsJsonDictionaryOrArray(object obj) => IsJsonDictionary(obj) || IsJsonArray(obj);
         public static Dictionary<string, object> CastJsonDictionary(object obj) => (Dictionary<string, object>)obj;
 
         public static List<object> CastJsonArray(object obj) => (List<object>)obj;

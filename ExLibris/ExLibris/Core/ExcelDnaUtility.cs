@@ -49,6 +49,8 @@ namespace ExLibris.Core
 
         public static object NullIfEmpty(object value) => IsEmpty(value) ? null : value;
 
+        public static object ToExcelValue(object value) => value == null ? ExcelEmpty.Value : value;
+
         public static IExcelObservable FuncOrNAIfThrown(Func<IExcelObservable> func)
         {
             try

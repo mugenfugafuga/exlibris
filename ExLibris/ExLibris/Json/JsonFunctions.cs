@@ -1,7 +1,7 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.Json;
-using System;
+using System.Linq;
 
 namespace ExLibris.Json
 {
@@ -111,5 +111,61 @@ namespace ExLibris.Json
                 );
         }
 
+        [ExcelFunction(
+            Name = "ExLibris.Json.GetJsonValue",
+            Category = "ExLibris.Json"
+            )]
+        public static object GetJsonValue(string objectHandle, string keyPath)
+        {
+            var context = ExLibrisContext.DefaultContext;
+
+            return ExcelAsyncUtil.Observe(
+                nameof(GetJsonValue),
+                new object[] { objectHandle, keyPath, },
+                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                {
+                    var jo = context.ObjectRepository.GetObject(objectHandle);
+                    var value = new JsonObjectAccessor(jo).GetJsonValue(keyPath);
+
+                    if (JsonUtility.IsJsonDictionaryOrArray(value))
+                    {
+                        return JsonUtility.NewJsonObjectHandle(context.ObjectRepository, value);
+                    }
+                    else
+                    {
+                        return ExcelDnaUtility.NewSimpleExcelObservable(ExcelDnaUtility.ToExcelValue(value));
+                    }
+                })
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.Json.GetJsonKeyValues",
+            Category = "ExLibris.Json"
+            )]
+        public static object GetJsonKeyValues(string objectHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+
+            return ExcelAsyncUtil.Observe(
+                nameof(GetJsonKeyValues),
+                new object[] { objectHandle, },
+                () => ExcelDnaUtility.FuncOrNAIfThrown(() =>
+                {
+                    var jo = context.ObjectRepository.GetObject(objectHandle);
+                    var values = new JsonObjectAccessor(jo).GetJsonValues().ToList();
+
+                    var excelvalues = new object[values.Count, 2];
+
+                    for(var i = 0; i < values.Count; ++i)
+                    {
+                        excelvalues[i, 0] = values[i].KeyPath;
+                        excelvalues[i, 1] = ExcelDnaUtility.ToExcelValue(values[i].Value);
+                    }
+
+                    return ExcelDnaUtility.NewSimpleExcelObservable(excelvalues);
+                })
+                );
+        }
     }
 }
