@@ -23,6 +23,8 @@ namespace ExLibris.Core.WebSockets
             WebSocket.Open();
         }
 
+        public void SendMessage(string message) => WebSocket.Send(message);
+
         public void AddListener(string name, IWebsocketListener listener) => listeners[name] = listener;
 
         public void RemoveListener(string name) => listeners.TryRemove(name, out var _);

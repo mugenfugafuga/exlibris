@@ -10,6 +10,8 @@ namespace ExLibris.Core
         private readonly ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
         private readonly Func<object> func;
         private readonly Timer timer;
+        private object current = null;
+        private object locker = new object();
 
         public PeriodicExeCutionHandle(Func<object> func, int periodMilliSec)
         {
@@ -31,7 +33,18 @@ namespace ExLibris.Core
         private void TimerCallback(object _)
         {
             var o = func();
-            foreach(var obs in observers)
+
+            lock (locker)
+            {
+                if (current != null && current.Equals(o))
+                {
+                    return;
+                }
+
+                current = o;
+            }
+
+            foreach (var obs in observers)
             {
                 obs.OnNext(o);
             }

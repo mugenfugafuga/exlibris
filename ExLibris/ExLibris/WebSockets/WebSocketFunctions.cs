@@ -53,5 +53,32 @@ namespace ExLibris.WebSockets
                 webSocketHandle
                 );
         }
+
+        [ExcelFunction(
+            Name = "ExLibris.WebSockets.SendWebSocketMessage",
+            Category = "ExLibris.WebSockets")]
+        public static object SendWebSocketMessage(string webSocketHandle, string message, object afterThis)
+        {
+            if (ExLibrisUtility.IsExcelError(afterThis))
+            {
+                return ExcelError.ExcelErrorNA;
+            }
+
+            if(afterThis is bool && !(bool)afterThis)
+            {
+                return ExcelError.ExcelErrorNA;
+            }
+
+            var context = ExLibrisContext.DefaultContext;
+
+            return ExLibrisUtility.FuncOrNAIfThrown(() =>
+            {
+                var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+                client.SendMessage(message);
+
+                return $"sent message : {message}";
+            });
+
+        }
     }
 }
