@@ -7,7 +7,7 @@ namespace ExLibris.Core.Json
     public class JsonObjectConfiguration
     {
         [DataMember(Name = "double_to_date_text", Order = 120)]
-        public List<DoubleToDateTextSetting> DoubleToDateTextSettings { get; set; }
+        public List<DoubleToDateTextSetting> DoubleToDateTextSettings { get; set; } = new List<DoubleToDateTextSetting>();
 
         public JsonValueConverter GetJsonValueConverter() => new JsonValueConverter(GetValueShapers());
 
