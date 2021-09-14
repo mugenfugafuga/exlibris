@@ -28,11 +28,11 @@ namespace ExLibris.WebSockets
         public static object ObserveWebSocketStatus(string webSocketHandle, int periodMilliSec = 10000)
         {
             var context = ExLibrisContext.DefaultContext;
-            var ws = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+            var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
             return ExLibrisUtility.ObserveObjectPeriodically(
                 nameof(ObserveWebSocketStatus),
-                () => ws.WebSocket.State.ToString(),
+                () => client.WebSocket.State.ToString(),
                 periodMilliSec,
                 webSocketHandle, 
                 periodMilliSec
@@ -45,11 +45,11 @@ namespace ExLibris.WebSockets
         public static object ObserveWebSocketMessage(string webSocketHandle)
         {
             var context = ExLibrisContext.DefaultContext;
-            var ws = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+            var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
             return WebSocketUtility.ObserveWebSocketMessage(
                 nameof(ObserveWebSocketMessage),
-                ws,
+                client,
                 webSocketHandle
                 );
         }
