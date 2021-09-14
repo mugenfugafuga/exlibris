@@ -156,11 +156,17 @@
     <Compile Include="Core\Json\JsonValueConverter.cs" />
     <Compile Include="Core\ObjectHandle.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
+    <Compile Include="Core\PeriodicExeCutionHandle.cs" />
     <Compile Include="Core\ToExcelValue.cs" />
+    <Compile Include="Core\WebSockets\WebSocketMessageReveiverHandle.cs" />
+    <Compile Include="Core\WebSockets\IWebsocketListener.cs" />
+    <Compile Include="Core\WebSockets\WebsocketClient.cs" />
+    <Compile Include="Core\WebSockets\WebSocketUtility.cs" />
     <Compile Include="ExLibrisContext.cs" />
     <Compile Include="ExLibrisFunctions.cs" />
     <Compile Include="Json\JsonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebSockets\WebSocketFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ExLibris-AddIn.dna" />
