@@ -14,6 +14,9 @@ namespace ExLibris.Core.WebSockets
         {
             this.WebSocket = new WebSocket(websocketUri);
 
+            WebSocket.EnableAutoSendPing = true;
+            WebSocket.AutoSendPingInterval = 30000;
+
             WebSocket.Opened += Opened;
             WebSocket.Closed += Closed;
             WebSocket.Error += Error;
