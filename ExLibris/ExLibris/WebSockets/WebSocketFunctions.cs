@@ -1,6 +1,7 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.WebSockets;
+using System;
 
 namespace ExLibris.WebSockets
 {
@@ -82,7 +83,7 @@ namespace ExLibris.WebSockets
                 var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
                 client.SendMessage(message);
 
-                return $"sent message : {message}";
+                return $"message sent : {DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fff")}";
             });
 
         }
