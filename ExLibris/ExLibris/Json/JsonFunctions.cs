@@ -94,16 +94,26 @@ namespace ExLibris.Json
         [ExcelFunction(
             Name = "ExLibris.Json.ShowJsonText",
             Category = "ExLibris.Json")]
-        public static object ShowJsonText(string objectHandle, bool pretty)
+        public static object ShowJsonText(string objectHandle, bool pretty = false, bool rightNow = false)
         {
             var context = ExLibrisContext.DefaultContext;
 
-            return ExLibrisUtility.RunAsync(
-                nameof(ShowJsonText),
-                () => pretty ?
+            if (rightNow)
+            {
+                return pretty ?
                         JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
-                        JsonObjectSerialiser.ToJsonText(context.ObjectRepository.GetObject(objectHandle)),
-                objectHandle, pretty);
+                        JsonObjectSerialiser.ToJsonText(context.ObjectRepository.GetObject(objectHandle));
+
+            }
+            else
+            {
+                return ExLibrisUtility.RunAsync(
+                    nameof(ShowJsonText),
+                    () => pretty ?
+                            JsonObjectSerialiser.ToJsonPrettyText(context.ObjectRepository.GetObject(objectHandle)) :
+                            JsonObjectSerialiser.ToJsonText(context.ObjectRepository.GetObject(objectHandle)),
+                    objectHandle, pretty);
+            }
         }
 
         [ExcelFunction(
