@@ -3,6 +3,7 @@ using ExLibris.Core;
 using ExLibris.Core.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace ExLibris.Json
@@ -70,6 +71,25 @@ namespace ExLibris.Json
                     new JsonObjectBuilder(context.ObjectRepository, jsonValueConverter)
                     .SetOnlyRootValue(jsonText)
                     .BuildJsonObject();
+
+        [ExcelFunction(
+             Name = "ExLibris.Json.LoadJsonTextFile",
+             Category = "ExLibris.Json")]
+        public static object LoadJsonTextFile(string jsonFile, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var configuration = context.GetConfiguration(configurationHandle);
+
+            return ObserveJsonObjectHandle(
+                nameof(CreateJsonObject),
+                context.ObjectRepository,
+                () => CreateJsonObjectByJsonText(
+                    File.ReadAllText(jsonFile),
+                    context,
+                    configuration.jsonObjectConfiguration.GetJsonValueConverter()),
+                jsonFile,
+                configurationHandle);
+        }
 
         [ExcelFunction(
             Name = "ExLibris.Json.ShowJsonText",
