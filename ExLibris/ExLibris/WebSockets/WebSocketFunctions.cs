@@ -9,8 +9,13 @@ namespace ExLibris.WebSockets
         [ExcelFunction(
             Name = "ExLibris.WebSockets.OpenWebSocket",
             Category = "ExLibris.WebSockets")]
-        public static object OpenWebSocket(string webSocketUri)
+        public static object OpenWebSocket(string webSocketUri, object identifier)
         {
+            if (ExLibrisUtility.IsExcelError(identifier))
+            {
+                return ExcelError.ExcelErrorNA;
+            }
+
             var context = ExLibrisContext.DefaultContext;
             var configuration = context.DefaultExLibrisConfiguration;
 
@@ -18,7 +23,8 @@ namespace ExLibris.WebSockets
                 nameof(OpenWebSocket),
                 context.ObjectRepository,
                 () => new WebsocketClient(webSocketUri),
-                webSocketUri
+                webSocketUri,
+                identifier
                 );
         }
 
