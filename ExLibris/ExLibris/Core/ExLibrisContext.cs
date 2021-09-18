@@ -17,5 +17,11 @@
 
             return DefaultExLibrisConfiguration;
         }
+
+        public ExcelFunctionCallSupport GetFunctionCallSupport()
+            => new ExcelFunctionCallSupport(ObjectRepository, DefaultExLibrisConfiguration);
+
+        public ExcelFunctionCallSupport GetFunctionCallSupport(string confHandleKey)
+            => new ExcelFunctionCallSupport(ObjectRepository, GetConfiguration(confHandleKey));
     }
 }

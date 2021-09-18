@@ -13,15 +13,15 @@ namespace ExLibris
         public static object LoadConfiguration(object[,] matrix)
         {
             var context = ExLibrisContext.DefaultContext;
-            var configuration = context.DefaultExLibrisConfiguration;
+            var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ObserveObjectHandle(
                 nameof(LoadConfiguration),
-                context.ObjectRepository,
+                support.ObjectRepository,
                 () =>
                 {
-                    var ema = ExLibrisUtility.GetExcelValueConverter(configuration).GetExcelMatrixAccessor(matrix);
-                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, context, configuration.jsonObjectConfiguration.GetJsonValueConverter());
+                    var ema = support.GetExcelValueConverter().GetExcelMatrixAccessor(matrix);
+                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, support, support.GetJsonValueConverter());
 
                     return JsonObjectSerialiser.ToObject<ExLibrisConfiguration>(jo);
                 },
@@ -32,13 +32,13 @@ namespace ExLibris
         public static object DumpObject(string objectHandle)
         {
             var context = ExLibrisContext.DefaultContext;
-            var configuration = context.DefaultExLibrisConfiguration;
+            var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.RunAsync(
                 nameof(DumpObject),
                 () => JsonFunctions.CreateJsonKeyValueTable(
-                    JsonObjectSerialiser.ToJsonObject(context.ObjectRepository.GetObject(objectHandle)),
-                    ExLibrisUtility.GetExcelValueConverter(configuration)),
+                    JsonObjectSerialiser.ToJsonObject(support.ObjectRepository.GetObject(objectHandle)),
+                    support.GetExcelValueConverter()),
                 objectHandle);
 
         }

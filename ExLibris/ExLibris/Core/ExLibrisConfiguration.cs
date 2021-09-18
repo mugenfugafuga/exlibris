@@ -10,6 +10,6 @@ namespace ExLibris.Core
         public ExcelValueConfiguration ExcelValueConfiguration { get; set; } = new ExcelValueConfiguration();
 
         [DataMember(Name = "json", Order = 110)]
-        public JsonObjectConfiguration jsonObjectConfiguration { get; set; } = new Json.JsonObjectConfiguration();
+        public JsonObjectConfiguration JsonObjectConfiguration { get; set; } = new Json.JsonObjectConfiguration();
     }
 }

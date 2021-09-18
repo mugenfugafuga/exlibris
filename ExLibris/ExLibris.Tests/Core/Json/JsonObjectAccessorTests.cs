@@ -10,9 +10,10 @@ namespace ExLibris.Core.Json.Tests
     {
         private static JsonObjectBuilder NewJsonObjectBuilder()
         {
-            var context = new ExLibrisContext();
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
 
-            return new JsonObjectBuilder(context.ObjectRepository, context.DefaultExLibrisConfiguration.jsonObjectConfiguration.GetJsonValueConverter());
+            return new JsonObjectBuilder(support.ObjectRepository, support.GetJsonValueConverter());
         }
 
         [TestMethod()]

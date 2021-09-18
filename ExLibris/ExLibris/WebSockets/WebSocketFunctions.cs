@@ -18,11 +18,11 @@ namespace ExLibris.WebSockets
             }
 
             var context = ExLibrisContext.DefaultContext;
-            var configuration = context.DefaultExLibrisConfiguration;
+            var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ObserveObjectHandle(
                 nameof(OpenWebSocket),
-                context.ObjectRepository,
+                support.ObjectRepository,
                 () => new WebsocketClient(webSocketUri),
                 webSocketUri,
                 identifier
@@ -35,7 +35,9 @@ namespace ExLibris.WebSockets
         public static object ObserveWebSocketStatus(string webSocketHandle, int periodMilliSec = 10000)
         {
             var context = ExLibrisContext.DefaultContext;
-            var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+            var support = context.GetFunctionCallSupport();
+
+            var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
             return ExLibrisUtility.ObserveObjectPeriodically(
                 nameof(ObserveWebSocketStatus),
@@ -52,7 +54,9 @@ namespace ExLibris.WebSockets
         public static object ObserveWebSocketMessage(string webSocketHandle)
         {
             var context = ExLibrisContext.DefaultContext;
-            var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+            var support = context.GetFunctionCallSupport();
+
+            var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
             return WebSocketUtility.ObserveWebSocketMessage(
                 nameof(ObserveWebSocketMessage),
@@ -77,10 +81,12 @@ namespace ExLibris.WebSockets
             }
 
             var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
 
             return ExLibrisUtility.FuncOrNAIfThrown(() =>
             {
-                var client = context.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+                var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
                 client.SendMessage(message);
 
                 return $"message sent : {DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fff")}";
