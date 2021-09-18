@@ -5,6 +5,7 @@ namespace ExLibris.Core
 {
     public class ExcelFunctionCallSupport
     {
+        private Lazy<ExcelValueConverter> lazyExcelValueConverter;
         private Lazy<JsonValueConverter> lazyJsonValueConverter;
 
         public ExcelFunctionCallSupport(ObjectRepository objectRepository, ExLibrisConfiguration configuration)
@@ -12,6 +13,7 @@ namespace ExLibris.Core
             ObjectRepository = objectRepository;
             Configuration = configuration;
 
+            lazyExcelValueConverter = new Lazy<ExcelValueConverter>(() => new ExcelValueConverter(Configuration.ExcelValueConfiguration));
             lazyJsonValueConverter = new Lazy<JsonValueConverter>(() => Configuration.JsonObjectConfiguration.GetJsonValueConverter());
         }
 
@@ -19,10 +21,17 @@ namespace ExLibris.Core
 
         public ExLibrisConfiguration Configuration { get; }
 
-        public ExcelValueConverter GetExcelValueConverter()
-            => new ExcelValueConverter(Configuration.ExcelValueConfiguration);
+        public ExcelValueConverter GetExcelValueConverter() => lazyExcelValueConverter.Value;
 
         public JsonValueConverter GetJsonValueConverter()
             => lazyJsonValueConverter.Value;
+
+        public ExcelMatrixAccessor GetExcelMatrixAccessor(object[,] excelMatrix) => new ExcelMatrixAccessor(GetExcelValueConverter(), excelMatrix);
+
+        public ExcelMatrixBuilder GetExcelMatrixBuilder(int rowSize, int columnSize) => new ExcelMatrixBuilder(GetExcelValueConverter(), rowSize, columnSize);
+
+        public JsonObjectAccessor NewJsonObjectAccessor(object jsonObject) => new JsonObjectAccessor(jsonObject);
+
+        public JsonObjectBuilder NewJsonObjectBuilder() => new JsonObjectBuilder(ObjectRepository, GetJsonValueConverter());
     }
 }

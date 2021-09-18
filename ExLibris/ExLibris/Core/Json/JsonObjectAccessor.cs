@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ExLibris.Core.Json
 {
-    public struct JsonObjectAccessor
+    public class JsonObjectAccessor
     {
         private readonly object jsonObject;
 

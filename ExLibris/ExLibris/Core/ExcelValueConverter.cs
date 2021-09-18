@@ -102,10 +102,5 @@ namespace ExLibris.Core
                     throw new ArgumentException($"unsupported type {toExcelValue}");
             }
         }
-
-        public ExcelMatrixAccessor GetExcelMatrixAccessor(object[,] excelMatrix) => new ExcelMatrixAccessor(this, excelMatrix);
-
-        public ExcelMatrixBuilder GetExcelMatrixBuilder(int rowSize, int columnSize) => new ExcelMatrixBuilder(this, rowSize, columnSize);
-            
     }
 }

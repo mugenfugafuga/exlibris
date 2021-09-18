@@ -20,8 +20,8 @@ namespace ExLibris
                 support.ObjectRepository,
                 () =>
                 {
-                    var ema = support.GetExcelValueConverter().GetExcelMatrixAccessor(matrix);
-                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, support, support.GetJsonValueConverter());
+                    var ema = support.GetExcelMatrixAccessor(matrix);
+                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, support);
 
                     return JsonObjectSerialiser.ToObject<ExLibrisConfiguration>(jo);
                 },
@@ -37,8 +37,9 @@ namespace ExLibris
             return ExLibrisUtility.RunAsync(
                 nameof(DumpObject),
                 () => JsonFunctions.CreateJsonKeyValueTable(
-                    JsonObjectSerialiser.ToJsonObject(support.ObjectRepository.GetObject(objectHandle)),
-                    support.GetExcelValueConverter()),
+                    JsonObjectSerialiser.ToJsonObject(
+                        support.ObjectRepository.GetObject(objectHandle)),
+                        support),
                 objectHandle);
 
         }
