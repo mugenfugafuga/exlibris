@@ -162,7 +162,7 @@
     <Compile Include="Core\WebSockets\IWebsocketListener.cs" />
     <Compile Include="Core\WebSockets\WebsocketClient.cs" />
     <Compile Include="Core\WebSockets\WebSocketUtility.cs" />
-    <Compile Include="ExLibrisContext.cs" />
+    <Compile Include="Core\ExLibrisContext.cs" />
     <Compile Include="ExLibrisFunctions.cs" />
     <Compile Include="Json\JsonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

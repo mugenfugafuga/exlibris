@@ -1,6 +1,4 @@
-﻿using ExLibris.Core;
-
-namespace ExLibris
+﻿namespace ExLibris.Core
 {
     public class ExLibrisContext
     {
