@@ -75,7 +75,7 @@ namespace ExLibris.Core
                => ExcelAsyncUtil.Observe(
                        collerFunctionName,
                        paramObjects,
-                       () => FuncOrObjservableNAIfThrown(() => new ObjectHandle(objectRepository, objectFunc()))
+                       () => FuncOrObjservableNAIfThrown(() => new ObjectRegistrationHandle(objectRepository, objectFunc()))
                        );
 
         public static object ObserveObjectHandle(
@@ -86,7 +86,7 @@ namespace ExLibris.Core
                => ExcelAsyncUtil.Observe(
                        collerFunctionName,
                        paramObjects,
-                       () => FuncOrObjservableNAIfThrown(() => new ObjectHandle(objectRepository, disposableFunc()))
+                       () => FuncOrObjservableNAIfThrown(() => new ObjectRegistrationHandle(objectRepository, disposableFunc()))
                        );
 
         public static object ObserveObjectPeriodically(

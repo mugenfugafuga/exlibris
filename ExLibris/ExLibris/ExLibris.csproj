@@ -155,7 +155,7 @@
     <Compile Include="Core\Json\JsonObjectSerialiser.cs" />
     <Compile Include="Core\Json\JsonUtility.cs" />
     <Compile Include="Core\Json\JsonValueConverter.cs" />
-    <Compile Include="Core\ObjectHandle.cs" />
+    <Compile Include="Core\ObjectRegistrationHandle.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
     <Compile Include="Core\PeriodicExeCutionHandle.cs" />
     <Compile Include="Core\ToExcelValue.cs" />

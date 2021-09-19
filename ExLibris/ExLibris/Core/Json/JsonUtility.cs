@@ -56,7 +56,7 @@ namespace ExLibris.Core.Json
             $"{arrayBra}{arrayIndex}{arrayKet}" :
             $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
 
-        public static ObjectHandle NewJsonObjectHandle(ObjectRepository objectRepository, object value)
-            => new ObjectHandle(jsonObjectName, objectRepository, value);
+        public static ObjectRegistrationHandle NewJsonObjectHandle(ObjectRepository objectRepository, object value)
+            => new ObjectRegistrationHandle(jsonObjectName, objectRepository, value);
     }
 }
