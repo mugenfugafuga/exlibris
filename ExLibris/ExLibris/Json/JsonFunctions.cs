@@ -1,7 +1,6 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.Json;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +17,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return ObserveJsonObjectHandle(
+            return JsonUtility.ObserveJsonObject(
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => CreateJsonObject(
@@ -78,7 +77,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return ObserveJsonObjectHandle(
+            return JsonUtility.ObserveJsonObject(
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => CreateJsonObjectByJsonText(
@@ -134,7 +133,7 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionaryOrArray(value))
                     {
-                        return JsonUtility.NewJsonObjectHandle(support.ObjectRepository, value);
+                        return JsonUtility.NewJsonObjectHandle(support.ObjectRepository, () => value);
                     }
                     else
                     {
@@ -184,7 +183,7 @@ namespace ExLibris.Json
 
             var matrix = support.GetExcelMatrixAccessor(param);
 
-            return ObserveJsonObjectHandle(
+            return JsonUtility.ObserveJsonObject(
                 nameof(CreateJsonArray),
                 support.ObjectRepository,
                 () => CreateJsonArray(matrix, support),
@@ -296,16 +295,5 @@ namespace ExLibris.Json
 
             return values.BuildExcelMatrix();
         }
-
-        private static object ObserveJsonObjectHandle(
-            string collerFunctionName,
-            ObjectRepository objectRepository,
-            Func<object> jsonObjectFunc,
-            params object[] paramObjects)
-            => ExcelAsyncUtil.Observe(
-                    collerFunctionName,
-                    paramObjects,
-                    () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() => JsonUtility.NewJsonObjectHandle(objectRepository, jsonObjectFunc()))
-                    );
     }
 }

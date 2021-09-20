@@ -67,37 +67,109 @@ namespace ExLibris.Core
             }
         }
 
-        public static object ObserveObjectHandle(
-               string collerFunctionName,
+        public static object ExcelObserveObjectRegistration<T>(
+               string callerFunctionName,
+               string objectName,
                ObjectRepository objectRepository,
-               Func<object> objectFunc,
+               Func<T> func,
                params object[] paramObjects)
-               => ExcelAsyncUtil.Observe(
-                       collerFunctionName,
-                       paramObjects,
-                       () => FuncOrObjservableNAIfThrown(() => new ObjectRegistrationHandle(objectRepository, objectFunc()))
-                       );
+               => ExcelObserve(
+                   callerFunctionName,
+                   () => NewObjectRegistrationHandle<T>(objectName, objectRepository, func),
+                   paramObjects
+                   );
 
-        public static object ObserveObjectHandle(
-               string collerFunctionName,
+        public static object ObserveObjectHandle<T>(
+               string callerFunctionName,
                ObjectRepository objectRepository,
-               Func<IDisposable> disposableFunc,
+               Func<T> func,
                params object[] paramObjects)
-               => ExcelAsyncUtil.Observe(
-                       collerFunctionName,
-                       paramObjects,
-                       () => FuncOrObjservableNAIfThrown(() => new ObjectRegistrationHandle(objectRepository, disposableFunc()))
-                       );
+               => ExcelObserve(
+                   callerFunctionName,
+                   () => NewObjectRegistrationHandle<T>(objectRepository, func),
+                   paramObjects
+                   );
 
         public static object ObserveObjectPeriodically(
-               string collerFunctionName,
+               string callerFunctionName,
                Func<object> func,
                int periodMilliSec,
                params object[] paramObjects)
                => ExcelAsyncUtil.Observe(
-                       collerFunctionName,
+                       callerFunctionName,
                        paramObjects,
                        () => FuncOrObjservableNAIfThrown(() => new PeriodicExeCutionHandle(func, periodMilliSec))
                        );
+
+        public static object ExcelObserve(
+            string callerFunctionName,
+            Func<IExcelObservable> func,
+            params object[] paramObjects
+            )
+            => ExcelAsyncUtil.Observe(
+                       callerFunctionName,
+                       paramObjects,
+                       () => func()
+                       );
+
+
+        public static IExcelObservable NewObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+    => new ObjectRegistrationHandle<T>(objectRepository, objectFunc);
+
+        public static IExcelObservable NewObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            => new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
+
+        private class ObjectRegistrationHandle<T> : IExcelObservable, IDisposable
+        {
+            private static readonly Action doNothing = () => { };
+
+            public readonly string HandleKey;
+            public readonly ObjectRepository objectRepository;
+
+            public T Value { get; private set; }
+
+
+            private readonly Func<T> objectFunc;
+
+
+            public ObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc) :
+                this(typeof(T).FullName, objectRepository, objectFunc)
+            {
+            }
+
+            public ObjectRegistrationHandle(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            {
+                HandleKey = $"{objectName}:{Guid.NewGuid().ToString().ToUpper()}";
+                this.objectRepository = objectRepository;
+                this.objectFunc = objectFunc;
+            }
+
+            public virtual void Dispose()
+            {
+                objectRepository.Remove(HandleKey);
+
+                if (Value != null && Value is IDisposable)
+                {
+                    ((IDisposable)Value).Dispose();
+                }
+            }
+
+            public IDisposable Subscribe(IExcelObserver observer)
+            {
+                try
+                {
+                    var v = objectFunc();
+                    Value = v;
+                    objectRepository.RegisterObject(HandleKey, v);
+
+                    observer.OnNext(HandleKey);
+                }
+                catch (Exception)
+                {
+                    observer.OnNext(ExcelError.ExcelErrorNA);
+                }
+                return this;
+            }
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using ExcelDna.Integration;
+using System;
+using System.Collections.Generic;
 
 namespace ExLibris.Core.Json
 {
@@ -56,7 +58,19 @@ namespace ExLibris.Core.Json
             $"{arrayBra}{arrayIndex}{arrayKet}" :
             $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
 
-        public static ObjectRegistrationHandle NewJsonObjectHandle(ObjectRepository objectRepository, object value)
-            => new ObjectRegistrationHandle(jsonObjectName, objectRepository, value);
+        public static IExcelObservable NewJsonObjectHandle(ObjectRepository objectRepository, Func<object> func)
+            => ExLibrisUtility.NewObjectRegistrationHandle(jsonObjectName, objectRepository, func);
+
+        public static object ObserveJsonObject(
+        string collerFunctionName,
+        ObjectRepository objectRepository,
+        Func<object> jsonObjectFunc,
+        params object[] paramObjects)
+        => ExLibrisUtility.ExcelObserveObjectRegistration(
+            collerFunctionName,
+            jsonObjectName,
+            objectRepository,
+            jsonObjectFunc,
+            paramObjects);
     }
 }
