@@ -34,7 +34,7 @@ namespace ExLibris.Json
                 return CreateJsonObjectByMatrix(support.GetExcelMatrixAccessor((object[,])param), support);
             }
 
-            var value = support.GetExcelValueConverter().ToValue(param);
+            var value = support.ToValue(param);
 
             if (param is string)
             {
@@ -125,8 +125,6 @@ namespace ExLibris.Json
                 nameof(GetJsonValue),
                 () => 
                 {
-                    var ev = support.GetExcelValueConverter();
-
                     var jo = support.ObjectRepository.GetObject(objectHandle);
                     var value = support.NewJsonObjectAccessor(jo).GetJsonValue(keyPath);
 
@@ -136,7 +134,7 @@ namespace ExLibris.Json
                     }
                     else
                     {
-                        return ExLibrisUtility.NewObservableObjectHandle(() => ev.ToExcel(value));
+                        return ExLibrisUtility.NewObservableObjectHandle(() => support.ToExcel(value));
                     }
                 },
                 objectHandle,
@@ -235,7 +233,7 @@ namespace ExLibris.Json
                         return CreateJsonTable(JsonUtility.CastJsonArray(jo), support);
                     }
 
-                    return support.GetExcelValueConverter().ToExcel(jo);
+                    return support.ToExcel(jo);
                 },
                 objectHandle,
                 configurationHandle);

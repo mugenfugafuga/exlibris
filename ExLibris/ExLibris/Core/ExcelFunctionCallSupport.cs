@@ -33,5 +33,8 @@ namespace ExLibris.Core
         public JsonObjectAccessor NewJsonObjectAccessor(object jsonObject) => new JsonObjectAccessor(jsonObject);
 
         public JsonObjectBuilder NewJsonObjectBuilder() => new JsonObjectBuilder(ObjectRepository, GetJsonValueConverter());
+
+        public object ToValue(object excelValue) => GetExcelValueConverter().ToValue(excelValue);
+        public object ToExcel(object value) => GetExcelValueConverter().ToExcel(value);
     }
 }
