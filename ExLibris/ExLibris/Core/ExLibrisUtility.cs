@@ -23,7 +23,7 @@ namespace ExLibris.Core
             }
         }
 
-        public static IExcelObservable NewExcelObservableDoNothingOnDisposing(object value) => new ExcelObservableDoNothingOnDisposing(value);
+        public static IExcelObservable NewObservableObjectHandle<T>(Func<T> func) => new ObservableObjectHandle<T>(func);
 
         public static object RunAsync(
             string callerFunctionName,
@@ -35,34 +35,40 @@ namespace ExLibris.Core
                 () => FuncOrNAIfThrown(() =>objectFunction())
                 );
 
-        public static IExcelObservable FuncOrObjservableNAIfThrown<T>(Func<T> func) where T : IExcelObservable
+        private class ObservableObjectHandle<T> : IExcelObservable, IDisposable
         {
-            try
-            {
-                return func();
-            }
-            catch (Exception)
-            {
-                return NewExcelObservableDoNothingOnDisposing(ExcelError.ExcelErrorNA);
-            }
-        }
+            public T Value { get; private set; }
 
-        class ExcelObservableDoNothingOnDisposing : IExcelObservable, IDisposable
-        {
-            private object value;
 
-            public ExcelObservableDoNothingOnDisposing(object value)
+            private readonly Func<T> objectFunc;
+
+            public ObservableObjectHandle(Func<T> objectFunc)
             {
-                this.value = value;
+                this.objectFunc = objectFunc;
             }
 
             public void Dispose()
             {
+                if(Value != null && Value is IDisposable)
+                {
+                    ((IDisposable)Value).Dispose();
+                }
             }
 
             public IDisposable Subscribe(IExcelObserver observer)
             {
-                observer.OnNext(value);
+                try
+                {
+                    var v = objectFunc();
+                    Value = v;
+
+                    observer.OnNext(v);
+                }
+                catch (Exception)
+                {
+                    observer.OnNext(ExcelError.ExcelErrorNA);
+                }
+
                 return this;
             }
         }
@@ -98,7 +104,7 @@ namespace ExLibris.Core
                => ExcelAsyncUtil.Observe(
                        callerFunctionName,
                        paramObjects,
-                       () => FuncOrObjservableNAIfThrown(() => new PeriodicExeCutionHandle(func, periodMilliSec))
+                       () => new PeriodicExeCutionHandle(func, periodMilliSec)
                        );
 
         public static object ExcelObserve(
@@ -130,7 +136,6 @@ namespace ExLibris.Core
 
 
             private readonly Func<T> objectFunc;
-
 
             public ObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc) :
                 this(typeof(T).FullName, objectRepository, objectFunc)

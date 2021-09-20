@@ -11,7 +11,7 @@ namespace ExLibris.Core.WebSockets
                => ExcelAsyncUtil.Observe(
                        collerFunctionName,
                        paramObjects,
-                       () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() => new WebSocketMessageReveiverHandle(client))
+                       () => new WebSocketMessageReveiverHandle(client)
                        );
     }
 }

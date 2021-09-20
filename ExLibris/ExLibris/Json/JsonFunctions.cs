@@ -121,10 +121,9 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return ExcelAsyncUtil.Observe(
+            return ExLibrisUtility.ExcelObserve(
                 nameof(GetJsonValue),
-                new object[] { objectHandle, keyPath, configurationHandle, },
-                () => ExLibrisUtility.FuncOrObjservableNAIfThrown(() =>
+                () => 
                 {
                     var ev = support.GetExcelValueConverter();
 
@@ -137,9 +136,11 @@ namespace ExLibris.Json
                     }
                     else
                     {
-                        return ExLibrisUtility.NewExcelObservableDoNothingOnDisposing(ev.ToExcel(value));
+                        return ExLibrisUtility.NewObservableObjectHandle(() => ev.ToExcel(value));
                     }
-                })
+                },
+                objectHandle,
+                keyPath,configurationHandle
                 );
         }
 
