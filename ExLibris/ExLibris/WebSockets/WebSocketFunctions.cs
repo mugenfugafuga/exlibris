@@ -10,21 +10,32 @@ namespace ExLibris.WebSockets
         [ExcelFunction(
             Name = "ExLibris.WebSockets.OpenWebSocket",
             Category = "ExLibris.WebSockets")]
-        public static object OpenWebSocket(string webSocketUri, object identifier)
+        public static object OpenWebSocket(string webSocketUri, string subProtocol, object identifier)
         {
-            if (ExLibrisUtility.IsExcelError(identifier))
-            {
-                return ExcelError.ExcelErrorNA;
-            }
-
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ExcelObserveObjectRegistration(
                 nameof(OpenWebSocket),
                 support.ObjectRepository,
-                () => new WebsocketClient(webSocketUri),
+                () =>
+                {
+                    if (ExLibrisUtility.IsExcelError(identifier))
+                    {
+                        throw new ArgumentException($"{nameof(identifier)} is Error");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(subProtocol))
+                    {
+                        return new WebsocketClient(webSocketUri);
+                    }
+                    else
+                    {
+                        return new WebsocketClient(webSocketUri, subProtocol);
+                    }
+                },
                 webSocketUri,
+                subProtocol,
                 identifier
                 );
         }
@@ -37,15 +48,18 @@ namespace ExLibris.WebSockets
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+            return ExLibrisUtility.FuncOrNAIfThrown(() =>
+            {
+                var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
-            return ExLibrisUtility.ObserveObjectPeriodically(
-                nameof(ObserveWebSocketStatus),
-                () => client.WebSocket.State.ToString(),
-                periodMilliSec,
-                webSocketHandle, 
-                periodMilliSec
-                );
+                return ExLibrisUtility.ObserveObjectPeriodically(
+                    nameof(ObserveWebSocketStatus),
+                    () => client.WebSocket.State.ToString(),
+                    periodMilliSec,
+                    webSocketHandle,
+                    periodMilliSec
+                    );
+            });
         }
 
         [ExcelFunction(
@@ -56,13 +70,16 @@ namespace ExLibris.WebSockets
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
+            return ExLibrisUtility.FuncOrNAIfThrown(() =>
+            {
+                var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
-            return WebSocketUtility.ObserveWebSocketMessage(
-                nameof(ObserveWebSocketMessage),
-                client,
-                webSocketHandle
-                );
+                return WebSocketUtility.ObserveWebSocketMessage(
+                    nameof(ObserveWebSocketMessage),
+                    client,
+                    webSocketHandle
+                    );
+            });
         }
 
         [ExcelFunction(
@@ -70,22 +87,21 @@ namespace ExLibris.WebSockets
             Category = "ExLibris.WebSockets")]
         public static object SendWebSocketMessage(string webSocketHandle, string message, object afterThis)
         {
-            if (ExLibrisUtility.IsExcelError(afterThis))
-            {
-                return ExcelError.ExcelErrorNA;
-            }
-
-            if(afterThis is bool && !(bool)afterThis)
-            {
-                return ExcelError.ExcelErrorNA;
-            }
-
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-
             return ExLibrisUtility.FuncOrNAIfThrown(() =>
             {
+                if (ExLibrisUtility.IsExcelError(afterThis))
+                {
+                    throw new Exception($"{nameof(afterThis)} is Error");
+                }
+
+                if (afterThis is bool && !(bool)afterThis)
+                {
+                    throw new Exception($"{nameof(afterThis)} is false");
+                }
+
                 var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
                 client.SendMessage(message);
 

@@ -10,9 +10,13 @@ namespace ExLibris.Core.WebSockets
         private ConcurrentDictionary<string, IWebsocketListener> listeners = new ConcurrentDictionary<string, IWebsocketListener>();
         public WebSocket WebSocket { get; }
 
-        public WebsocketClient(string websocketUri)
+        public WebsocketClient(string websocketUri) : this(websocketUri, string.Empty)
         {
-            this.WebSocket = new WebSocket(websocketUri);
+        }
+
+        public WebsocketClient(string websocketUri, string subProtocol)
+        {
+            this.WebSocket = new WebSocket(websocketUri, subProtocol);
 
             WebSocket.EnableAutoSendPing = true;
             WebSocket.AutoSendPingInterval = 30000;
