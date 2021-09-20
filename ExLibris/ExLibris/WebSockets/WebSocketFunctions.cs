@@ -20,7 +20,7 @@ namespace ExLibris.WebSockets
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.ObserveObjectHandle(
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
                 nameof(OpenWebSocket),
                 support.ObjectRepository,
                 () => new WebsocketClient(webSocketUri),

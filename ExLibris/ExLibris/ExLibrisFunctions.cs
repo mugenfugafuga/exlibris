@@ -15,7 +15,7 @@ namespace ExLibris
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.ObserveObjectHandle(
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
                 nameof(LoadConfiguration),
                 support.ObjectRepository,
                 () =>

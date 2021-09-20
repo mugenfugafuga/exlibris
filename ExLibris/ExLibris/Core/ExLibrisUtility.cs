@@ -85,7 +85,7 @@ namespace ExLibris.Core
                    paramObjects
                    );
 
-        public static object ObserveObjectHandle<T>(
+        public static object ExcelObserveObjectRegistration<T>(
                string callerFunctionName,
                ObjectRepository objectRepository,
                Func<T> func,

@@ -180,23 +180,23 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            var matrix = support.GetExcelMatrixAccessor(param);
-
             return JsonUtility.ObserveJsonObject(
                 nameof(CreateJsonArray),
                 support.ObjectRepository,
-                () => CreateJsonArray(matrix, support),
+                () => CreateJsonArray(param, support),
                 param,
                 configurationHandle);
         }
 
-        private static List<object> CreateJsonArray(ExcelMatrixAccessor param, ExcelFunctionCallSupport support)
+        private static List<object> CreateJsonArray(object[,] param, ExcelFunctionCallSupport support)
         {
-            var keys = param.Rows.First().Values.Cast<string>().ToList();
+            var matrix = support.GetExcelMatrixAccessor(param);
+
+            var keys = matrix.Rows.First().Values.Cast<string>().ToList();
 
             var jo = new List<object>();
 
-            foreach(var row in param.Rows.Skip(1))
+            foreach(var row in matrix.Rows.Skip(1))
             {
                 var job = support.NewJsonObjectBuilder();
                 for (var c = 0; c < row.ColumnSize; ++c)
