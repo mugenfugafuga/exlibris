@@ -157,7 +157,6 @@
     <Compile Include="Core\Json\JsonUtility.cs" />
     <Compile Include="Core\Json\JsonValueConverter.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
-    <Compile Include="Core\PeriodicExeCutionHandle.cs" />
     <Compile Include="Core\ToExcelValue.cs" />
     <Compile Include="Core\WebSockets\WebSocketMessageReveiverHandle.cs" />
     <Compile Include="Core\WebSockets\IWebsocketListener.cs" />
