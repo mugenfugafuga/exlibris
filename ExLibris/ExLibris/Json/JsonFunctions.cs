@@ -22,7 +22,7 @@ namespace ExLibris.Json
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => CreateJsonObject(
-                    param, 
+                    param,
                     support),
                 param,
                 configurationHandle);
@@ -53,7 +53,7 @@ namespace ExLibris.Json
         {
             var job = support.NewJsonObjectBuilder();
 
-            foreach(var row in matrix.Rows)
+            foreach (var row in matrix.Rows)
             {
                 var keypath = (string)row[0];
                 var value = row[1];
@@ -124,7 +124,7 @@ namespace ExLibris.Json
 
             return ExLibrisUtility.ExcelObserve(
                 nameof(GetJsonValue),
-                () => 
+                () =>
                 {
                     var jo = support.ObjectRepository.GetObject(objectHandle);
                     var value = support.NewJsonObjectAccessor(jo).GetJsonValue(keyPath);
@@ -139,7 +139,8 @@ namespace ExLibris.Json
                     }
                 },
                 objectHandle,
-                keyPath,configurationHandle
+                keyPath,
+                configurationHandle
                 );
         }
 
@@ -246,7 +247,7 @@ namespace ExLibris.Json
 
             var jo = new List<object>();
 
-            foreach(var row in matrix.Rows.Skip(1))
+            foreach (var row in matrix.Rows.Skip(1))
             {
                 var job = support.NewJsonObjectBuilder();
                 for (var c = 0; c < row.ColumnSize; ++c)
@@ -343,6 +344,59 @@ namespace ExLibris.Json
             }
 
             return values.BuildExcelMatrix();
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.Json.SeachJsonArrayElements",
+            Category = "ExLibris.Json")]
+        public static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return JsonUtility.ObserveJsonObject(
+                nameof(CreateJsonObject),
+                support.ObjectRepository,
+                () => SeachJsonArrayElements(
+                    jsonArrayHandle,
+                    relativeKeyPath,
+                    searchValue,
+                    support),
+                jsonArrayHandle,
+                relativeKeyPath, 
+                searchValue,
+                configurationHandle);
+        }
+
+        public static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
+        {
+            var jo = support.ObjectRepository.GetObject(jsonArrayHandle);
+
+            if (!JsonUtility.IsJsonArray(jo))
+            {
+                return support.ToExcel(null);
+            }
+
+            var ja = JsonUtility.CastJsonArray(jo);
+
+            var sjaes = ja
+                .Where(jae => support.NewJsonObjectAccessor(jae).GetJsonValue(relativeKeyPath)?.Equals(searchValue) ?? false)
+                .ToList();
+
+            if (sjaes.Count > 1)
+            {
+                return sjaes;
+            }
+            else if(sjaes.Count == 1)
+            {
+                var v = sjaes.First();
+
+                return v;
+            }
+            else
+            {
+                return support.ToExcel(null);
+            }
         }
     }
 }
