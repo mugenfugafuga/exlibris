@@ -12,7 +12,9 @@ namespace ExLibris.Core.Json
             this.jsonObject = jsonObject;
         }
 
-        public IEnumerable<(string KeyPath, object Value)> GetJsonValues() => GetJsonValues(null, jsonObject);
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues() => GetJsonValues(int.MaxValue, null, jsonObject);
+
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues(int depth) => GetJsonValues(depth, null, jsonObject);
 
         public object GetJsonValue(string keyPath)
         {
@@ -54,17 +56,17 @@ namespace ExLibris.Core.Json
             return null;
         }
 
-        private static IEnumerable<(string KeyPath, object Value)> GetJsonValues(string keyPath, object value)
+        private static IEnumerable<(string KeyPath, object Value)> GetJsonValues(int rest, string keyPath, object value)
         {
-            if (JsonUtility.IsJsonDictionary(value))
+            if (rest > 0 && JsonUtility.IsJsonDictionary(value))
             {
                 return JsonUtility.CastJsonDictionary(value)
-                    .SelectMany(kv => GetJsonValues(JsonUtility.ConcatKey(keyPath, kv.Key), kv.Value));
+                    .SelectMany(kv => GetJsonValues(rest - 1, JsonUtility.ConcatKey(keyPath, kv.Key), kv.Value));
             }
-            else if (JsonUtility.IsJsonArray(value))
+            else if (rest > 0 && JsonUtility.IsJsonArray(value))
             {
                 return JsonUtility.CastJsonArray(value)
-                    .SelectMany((v, index) => GetJsonValues(JsonUtility.ConcatKey(keyPath, index), v));
+                    .SelectMany((v, index) => GetJsonValues(rest - 1, JsonUtility.ConcatKey(keyPath, index), v));
             }
             else
             {

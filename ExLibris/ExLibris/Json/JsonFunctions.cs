@@ -1,6 +1,7 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -145,16 +146,38 @@ namespace ExLibris.Json
         [ExcelFunction(
             Name = "ExLibris.Json.GetJsonKeyValues",
             Category = "ExLibris.Json")]
-        public static object GetJsonKeyValues(string objectHandle, string configurationHandle)
+        public static object GetJsonKeyValues(string objectHandle, string configurationHandle, object depth)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return ExLibrisUtility.RunAsync(
-                nameof(GetJsonKeyValues),
-                () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support),
-                objectHandle,
-                configurationHandle);
+            return ExLibrisUtility.FuncOrNAIfThrown(() =>
+            {
+                if (ExLibrisUtility.IsExcelError(depth))
+                {
+                    throw new ArgumentException($"{nameof(depth)} is Error.");
+                }
+
+                if (ExLibrisUtility.IsExcelMissing(depth) || ExLibrisUtility.IsExcelEmpty(depth))
+                {
+                    return ExLibrisUtility.RunAsync(
+                        nameof(GetJsonKeyValues),
+                        () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support),
+                        objectHandle,
+                        configurationHandle,
+                        depth);
+                }
+                else
+                {
+                    return ExLibrisUtility.ExcelObserve(
+                        nameof(GetJsonKeyValues),
+                        () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support, Convert.ToInt32(depth)),
+                        objectHandle,
+                        configurationHandle,
+                        depth);
+                }
+
+            });
         }
 
         internal static object[,] CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support)
@@ -170,6 +193,33 @@ namespace ExLibris.Json
             }
 
             return mb.BuildExcelMatrix();
+        }
+
+        internal static IExcelObservable CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support, int depth)
+        {
+            var eos = new List<IExcelObservable>();
+            var values = support.NewJsonObjectAccessor(jo).GetJsonValues(depth).ToList();
+
+            var mb = support.GetExcelMatrixBuilder(values.Count, 2);
+
+            for (var i = 0; i < values.Count; ++i)
+            {
+                mb[i, 0] = values[i].KeyPath;
+
+                var v = values[i].Value;
+                if (JsonUtility.IsJsonDictionaryOrArray(v))
+                {
+                    var vv = JsonUtility.NewJsonObjectHandle(support.ObjectRepository, () => v);
+                    eos.Add(vv);
+                    mb[i, 1] = vv.HandleKey;
+                }
+                else
+                {
+                    mb[i, 1] = values[i].Value;
+                }
+            }
+
+            return ExLibrisUtility.AggreateExcelObservables(eos, mb.BuildExcelMatrix());
         }
 
         [ExcelFunction(

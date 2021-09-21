@@ -58,7 +58,7 @@ namespace ExLibris.Core.Json
             $"{arrayBra}{arrayIndex}{arrayKet}" :
             $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
 
-        public static IExcelObservable NewJsonObjectHandle(ObjectRepository objectRepository, Func<object> func)
+        public static IObjectRegistrationHandle NewJsonObjectHandle(ObjectRepository objectRepository, Func<object> func)
             => ExLibrisUtility.NewObjectRegistrationHandle(jsonObjectName, objectRepository, func);
 
         public static object ObserveJsonObject(

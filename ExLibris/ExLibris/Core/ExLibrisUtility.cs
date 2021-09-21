@@ -1,5 +1,7 @@
 ﻿using ExcelDna.Integration;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ExLibris.Core
 {
@@ -119,17 +121,20 @@ namespace ExLibris.Core
                        );
 
 
-        public static IExcelObservable NewObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+        public static IObjectRegistrationHandle NewObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
     => new ObjectRegistrationHandle<T>(objectRepository, objectFunc);
 
-        public static IExcelObservable NewObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+        public static IObjectRegistrationHandle NewObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
             => new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
 
-        private class ObjectRegistrationHandle<T> : IExcelObservable, IDisposable
+        public static IExcelObservable AggreateExcelObservables(IEnumerable<IExcelObservable> excelObservables, object value)
+            => new ExcelObservableAggregation(value, excelObservables);
+
+        private class ObjectRegistrationHandle<T> : IObjectRegistrationHandle, IDisposable
         {
             private static readonly Action doNothing = () => { };
 
-            public readonly string HandleKey;
+            public string HandleKey { get; }
             public readonly ObjectRepository objectRepository;
 
             public T Value { get; private set; }
@@ -173,6 +178,46 @@ namespace ExLibris.Core
                 {
                     observer.OnNext(ExcelError.ExcelErrorNA);
                 }
+                return this;
+            }
+        }
+
+        private class ExcelObservableAggregation : IExcelObservable, IDisposable
+        {
+            private object value;
+            private IEnumerable<IExcelObservable> excelObservables;
+
+            private List<IDisposable> disposables = new List<IDisposable>();
+
+            public ExcelObservableAggregation(object value, IEnumerable<IExcelObservable> excelObservables)
+            {
+                this.value = value;
+                this.excelObservables = excelObservables;
+            }
+
+            public void Dispose()
+            {
+                foreach(var d in disposables)
+                {
+                    d.Dispose();
+                }
+            }
+
+            public IDisposable Subscribe(IExcelObserver observer)
+            {
+                try
+                {
+                    var es = excelObservables.Select(e => e.Subscribe(observer));
+                    disposables.AddRange(es);
+
+                    observer.OnNext(value);
+
+                }
+                catch (Exception)
+                {
+                    observer.OnNext(ExcelError.ExcelErrorNA);
+                }
+
                 return this;
             }
         }
