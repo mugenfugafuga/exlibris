@@ -2,7 +2,7 @@
 
 namespace ExLibris.Core.Json
 {
-    public static class JsonObjectSerialiser
+    static class JsonObjectSerialiser
     {
         public static string ToJsonText(object jsonObject) => JsonSerializer.ToJsonString(jsonObject);
 
