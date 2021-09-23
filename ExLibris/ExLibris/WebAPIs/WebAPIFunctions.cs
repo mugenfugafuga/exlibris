@@ -47,7 +47,7 @@ namespace ExLibris.WebAPIs
         [ExcelFunction(
             Name = "ExLibris.WebAPIs.WebAPIGet",
             Category = "ExLibris.WebAPIs")]
-        public static object WebAPIGet(string webAPIHandle, string requestUri, object parameters, object identifier)
+        public static object WebAPIGet(string webAPIHandle, string requestUri, object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
@@ -65,21 +65,41 @@ namespace ExLibris.WebAPIs
                     }
 
                     var ru = support.ToValueAsString(requestUri);
-                    var p = GetParamters(support.ToValue(parameters), support);
 
                     if (string.IsNullOrWhiteSpace(ru))
                     {
-                        return webapi.Get(p);
+                        return webapi.Get();
                     }
                     else
                     {
-                        return webapi.Get(ru, p);
+                        return webapi.Get(ru);
                     }
                 },
                 webAPIHandle,
                 requestUri,
-                parameters,
                 identifier
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.WebAPIs.BuildUri",
+            Category = "ExLibris.WebAPIs")]
+        public static object BuildUri(string requestUri, object parameters)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.RunAsync(
+                nameof(BuildUri),
+                () =>
+                {
+                    var ru = support.ToValueAsString(requestUri);
+                    var p = GetParamters(support.ToValue(parameters), support);
+
+                    return WebAPI.ResolveUri(ru, p);
+                },
+                requestUri,
+                parameters
                 );
         }
 
