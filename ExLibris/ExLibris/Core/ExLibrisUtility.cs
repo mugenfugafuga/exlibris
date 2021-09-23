@@ -111,6 +111,17 @@ namespace ExLibris.Core
                        () => new PeriodicObservationHandle(func, periodMilliSec)
                        );
 
+        public static object ObserveObject<T>(
+            string callerFunctionName,
+            Func<T> func,
+            params object[] paramObjects
+            )
+            => ExcelObserve(
+                callerFunctionName,
+                () => NewObservableObjectHandle<T>(func),
+                paramObjects
+                );
+
         public static object ExcelObserve(
             string callerFunctionName,
             Func<IExcelObservable> func,

@@ -135,17 +135,14 @@ namespace ExLibris.WebAPIs
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.RunAsync(
-                nameof(BuildUri),
+            return ExLibrisUtility.FuncOrNAIfThrown(
                 () =>
                 {
                     var ru = support.ToValueAsString(requestUri);
                     var p = GetParamters(support.ToValue(parameters), support);
 
                     return WebAPI.ResolveUri(ru, p);
-                },
-                requestUri,
-                parameters
+                }
                 );
         }
 
