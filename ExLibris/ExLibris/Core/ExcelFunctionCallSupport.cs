@@ -36,5 +36,7 @@ namespace ExLibris.Core
 
         public object ToValue(object excelValue) => GetExcelValueConverter().ToValue(excelValue);
         public object ToExcel(object value) => GetExcelValueConverter().ToExcel(value);
+
+        public string ToValueAsString(object excelValue) => GetExcelValueConverter().ToValue(excelValue) as string;
     }
 }

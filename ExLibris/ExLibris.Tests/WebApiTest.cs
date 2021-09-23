@@ -30,6 +30,26 @@ namespace ExLibris.Tests
         }
 
         [TestMethod]
+        public void GetTest2()
+        {
+            using (var client = new HttpClient
+            {
+                BaseAddress = new Uri("https://httpbin.org"),
+            })
+            {
+                var response = client.GetAsync("get").Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                    Assert.Fail(response.ToString());
+                }
+
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+            }
+        }
+
+        [TestMethod]
         public void PostTest()
         {
             using (var client = new HttpClient())
