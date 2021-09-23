@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,20 +9,61 @@ namespace ExLibris.Core.WebAPIs
 {
     public class WebAPI : IDisposable
     {
-        private CancellationTokenSource source = new CancellationTokenSource();
-        private HttpClient client;
+        private readonly CancellationTokenSource source = new CancellationTokenSource();
+        private readonly HttpClient client;
 
-        public WebAPI()
+        private static HttpClient NewHttpClient(string baseUri, WebAPIHeaders headers)
         {
-            client = new HttpClient();
+            var client = new HttpClient();
+
+            if (!string.IsNullOrEmpty(baseUri))
+            {
+                client.BaseAddress = new Uri(baseUri);
+            }
+
+            if (headers == null)
+            {
+                return client;
+            }
+
+            var hs = client.DefaultRequestHeaders;
+
+            if (!string.IsNullOrEmpty(headers.UserAgent))
+            {
+                hs.UserAgent.ParseAdd(headers.UserAgent);
+            }
+
+            hs.Authorization = GetAuthenticationHeaderValue(headers.Authorization);
+
+            if (headers.CustomHeaders != null)
+            {
+                foreach(var header in headers.CustomHeaders)
+                {
+                    hs.TryAddWithoutValidation(header.Name, header.Value);
+                }
+            }
+
+            return client;
         }
 
-        public WebAPI(string baseUri)
+        private static AuthenticationHeaderValue GetAuthenticationHeaderValue(Authorization authorization)
         {
-            client = new HttpClient
+            if (authorization == null || string.IsNullOrEmpty(authorization.Scheme))
             {
-                BaseAddress = new Uri(baseUri),
-            };
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(authorization.Parameter))
+            {
+                return new AuthenticationHeaderValue(authorization.Scheme);
+            }
+
+            return new AuthenticationHeaderValue(authorization.Scheme, authorization.Parameter);
+        }
+
+        public WebAPI(string baseUri, WebAPIHeaders headers)
+        {
+            client = NewHttpClient(baseUri, headers);
         }
 
         public void Dispose()

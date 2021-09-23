@@ -158,6 +158,7 @@
     <Compile Include="Core\Json\JsonValueConverter.cs" />
     <Compile Include="Core\ObjectRepository.cs" />
     <Compile Include="Core\ToExcelValue.cs" />
+    <Compile Include="Core\WebAPIs\WebAPIHeaders.cs" />
     <Compile Include="Core\WebAPIs\Response.cs" />
     <Compile Include="Core\WebAPIs\WebAPI.cs" />
     <Compile Include="Core\WebSockets\WebSocketMessageReveiverHandle.cs" />

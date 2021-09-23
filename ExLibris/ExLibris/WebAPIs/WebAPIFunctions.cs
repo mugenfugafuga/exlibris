@@ -13,7 +13,7 @@ namespace ExLibris.WebAPIs
         [ExcelFunction(
             Name = "ExLibris.WebAPIs.OpenWebSocket",
             Category = "ExLibris.WebAPIs")]
-        public static object OpenWebAPI(string baseUri, object identifier)
+        public static object OpenWebAPI(string baseUri, string headersHandle, object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
@@ -30,17 +30,38 @@ namespace ExLibris.WebAPIs
 
                     var bu = support.ToValueAsString(baseUri);
 
-                    if (string.IsNullOrWhiteSpace(bu))
-                    {
-                        return new WebAPI();
-                    }
-                    else
-                    {
-                        return new WebAPI(bu);
-                    }
+                    var buri = string.IsNullOrEmpty(bu) ?
+                        null :
+                        bu;
+                    var headers = string.IsNullOrEmpty(headersHandle) ?
+                        null :
+                        support.ObjectRepository.GetObject<WebAPIHeaders>(headersHandle);
+
+                    return new WebAPI(buri, headers);
                 },
                 baseUri,
+                headersHandle,
                 identifier
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.WebAPIs.CreateHeaders",
+            Category = "ExLibris.WebAPIs")]
+        public static object CreateHeaders(object[,] matrix)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
+                nameof(CreateHeaders),
+                support.ObjectRepository,
+                () =>
+                {
+                    var jo = JsonFunctions.CreateJsonObjectByMatrix(support.GetExcelMatrixAccessor(matrix), support);
+                    return Core.Json.JsonObjectSerialiser.ToObject<WebAPIHeaders>(jo);
+                },
+                matrix
                 );
         }
 
