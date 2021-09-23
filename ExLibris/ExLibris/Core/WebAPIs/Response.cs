@@ -18,6 +18,10 @@ namespace ExLibris.Core.WebAPIs
 
         public string GetContent() => GetContentAsStringAsync().Result;
 
-        public int HttpStatus => Convert.ToInt32(httpResponse.StatusCode);
+        public int HttpStatusCode => Convert.ToInt32(httpResponse.StatusCode);
+
+        public string HttpStatus => $"{httpResponse.StatusCode}({HttpStatusCode})";
+
+        public string Headers => httpResponse.Headers.ToString();
     }
 }

@@ -130,18 +130,39 @@ namespace ExLibris.WebAPIs
         [ExcelFunction(
             Name = "ExLibris.WebAPIs.WebAPIResponseStatus",
             Category = "ExLibris.WebAPIs")]
-        public static object WebAPIResponseStatus(string responseHandle)
+        public static object WebAPIResponseStatus(string responseHandle, bool codeOnly = false)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.RunAsync(
-                nameof(WebAPIResponseContent),
+                nameof(WebAPIResponseStatus),
                 () =>
                 {
-                    var response = support.ObjectRepository.GetObject<Response>(responseHandle);
+                    var response = support.ObjectRepository.GetObject<Response>(support.ToValueAsString(responseHandle));
 
-                    return response.HttpStatus;
+                    return codeOnly ? (object)response.HttpStatusCode : response.HttpStatus;
+                },
+                responseHandle,
+                codeOnly
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.WebAPIs.WebAPIResponseHeader",
+            Category = "ExLibris.WebAPIs")]
+        public static object WebAPIResponseHeader(string responseHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.RunAsync(
+                nameof(WebAPIResponseHeader),
+                () =>
+                {
+                    var response = support.ObjectRepository.GetObject<Response>(support.ToValueAsString(responseHandle));
+
+                    return response.Headers;
                 },
                 responseHandle
                 );
