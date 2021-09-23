@@ -82,6 +82,52 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
+            Name = "ExLibris.WebAPIs.WebAPIPost",
+            Category = "ExLibris.WebAPIs")]
+        public static object WebAPIPost(string webAPIHandle, string requestUri, object requestContent, bool formContent, object identifier)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
+                nameof(WebAPIPost),
+                support.ObjectRepository,
+                () =>
+                {
+                    var webapi = support.ObjectRepository.GetObject<WebAPI>(webAPIHandle);
+
+                    if (ExLibrisUtility.IsExcelError(identifier))
+                    {
+                        throw new ArgumentException($"{nameof(identifier)} is Error");
+                    }
+
+                    var ru = support.ToValueAsString(requestUri);
+
+                    if (formContent)
+                    {
+                        var content = GetParamters(support.ToValue(requestContent), support);
+                        return string.IsNullOrEmpty(ru) ?
+                            webapi.Post(content) :
+                            webapi.Post(ru, content);
+                    }
+                    else
+                    {
+                        var content = (string)support.ToValue(requestContent);
+                        return string.IsNullOrEmpty(ru) ?
+                            webapi.Post(content) :
+                            webapi.Post(ru, content);
+                    }
+
+                },
+                webAPIHandle,
+                requestUri,
+                requestContent,
+                formContent,
+                identifier
+                );
+        }
+
+        [ExcelFunction(
             Name = "ExLibris.WebAPIs.BuildUri",
             Category = "ExLibris.WebAPIs")]
         public static object BuildUri(string requestUri, object parameters)
