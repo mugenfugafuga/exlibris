@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ExLibris.Core.WebAPIs
 {
-    public class WebAPI : IDisposable
+    public class WebAPIClient : IDisposable
     {
         private readonly CancellationTokenSource source = new CancellationTokenSource();
         private readonly HttpClient client;
@@ -61,7 +61,7 @@ namespace ExLibris.Core.WebAPIs
             return new AuthenticationHeaderValue(authorization.Scheme, authorization.Parameter);
         }
 
-        public WebAPI(string baseUri, WebAPIHeaders headers)
+        public WebAPIClient(string baseUri, WebAPIHeaders headers)
         {
             client = NewHttpClient(baseUri, headers);
         }
@@ -115,14 +115,5 @@ namespace ExLibris.Core.WebAPIs
             => requestContent == null || requestContent.Count == 0 ?
             null :
             new FormUrlEncodedContent(requestContent);
-
-
-        public static async Task<string> ResolveUriAsync(string requestUri, Dictionary<string, string> parameters)
-            => parameters == null || parameters.Count == 0 ?
-            requestUri :
-            $"{requestUri}?{await new FormUrlEncodedContent(parameters).ReadAsStringAsync()}";
-
-        public static string ResolveUri(string requestUri, Dictionary<string, string> parameters)
-            => ResolveUriAsync(requestUri, parameters).Result;
     }
 }
