@@ -5,6 +5,8 @@ using ExLibris.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 
 namespace ExLibris.WebAPIs
 {
@@ -153,11 +155,12 @@ namespace ExLibris.WebAPIs
                         null :
                         support.ObjectRepository.GetObject<WebAPIHeaders>(headersHandle);
 
-                    var client = new WebAPIClient(null, headers);
-
                     var ru = support.ToValueAsString(requestUri);
 
-                    return client.Get(ru);
+                    using (var client = new WebAPIClient(null, headers))
+                    {
+                        return client.Get(ru);
+                    }
                 },
                 requestUri,
                 headersHandle
@@ -181,19 +184,20 @@ namespace ExLibris.WebAPIs
                         null :
                         support.ObjectRepository.GetObject<WebAPIHeaders>(headersHandle);
 
-                    var client = new WebAPIClient(null, headers);
-
                     var ru = support.ToValueAsString(requestUri);
 
-                    if (formContent)
+                    using (var client = new WebAPIClient(null, headers))
                     {
-                        var content = ConvertParamters(requestContent, support);
-                        return client.Post(ru, content);
-                    }
-                    else
-                    {
-                        var content = (string)support.ToValue(requestContent);
-                        return client.Post(ru, content);
+                        if (formContent)
+                        {
+                            var content = ConvertParamters(requestContent, support);
+                            return client.Post(ru, content);
+                        }
+                        else
+                        {
+                            var content = (string)support.ToValue(requestContent);
+                            return client.Post(ru, content);
+                        }
                     }
                 },
                 requestUri,
