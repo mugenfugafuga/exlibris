@@ -135,5 +135,72 @@ namespace ExLibris.WebAPIs
                 responseHandle
                 );
         }
+
+        [ExcelFunction(
+            Name = "ExLibris.WebAPIs.GET",
+            Category = "ExLibris.WebAPIs")]
+        public static object WebAPIGet(string requestUri, string headersHandle = null)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
+                nameof(WebAPIGet),
+                support.ObjectRepository,
+                () =>
+                {
+                    var headers = string.IsNullOrEmpty(headersHandle) ?
+                        null :
+                        support.ObjectRepository.GetObject<WebAPIHeaders>(headersHandle);
+
+                    var client = new WebAPIClient(null, headers);
+
+                    var ru = support.ToValueAsString(requestUri);
+
+                    return client.Get(ru);
+                },
+                requestUri,
+                headersHandle
+                );
+        }
+
+        [ExcelFunction(
+            Name = "ExLibris.WebAPIs.POST",
+            Category = "ExLibris.WebAPIs")]
+        public static object WebAPIPost(string requestUri, object requestContent, bool formContent = false, string headersHandle = null)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
+                nameof(WebAPIPost),
+                support.ObjectRepository,
+                () =>
+                {
+                    var headers = string.IsNullOrEmpty(headersHandle) ?
+                        null :
+                        support.ObjectRepository.GetObject<WebAPIHeaders>(headersHandle);
+
+                    var client = new WebAPIClient(null, headers);
+
+                    var ru = support.ToValueAsString(requestUri);
+
+                    if (formContent)
+                    {
+                        var content = ConvertParamters(requestContent, support);
+                        return client.Post(ru, content);
+                    }
+                    else
+                    {
+                        var content = (string)support.ToValue(requestContent);
+                        return client.Post(ru, content);
+                    }
+                },
+                requestUri,
+                requestContent,
+                formContent,
+                headersHandle
+                );
+        }
     }
 }
