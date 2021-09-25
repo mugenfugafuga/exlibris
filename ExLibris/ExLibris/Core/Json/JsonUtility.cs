@@ -59,7 +59,7 @@ namespace ExLibris.Core.Json
             $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
 
         public static IObjectRegistrationHandle NewJsonObjectHandle(ObjectRepository objectRepository, Func<object> func)
-            => ExLibrisUtility.NewObjectRegistrationHandle(jsonObjectName, objectRepository, func);
+            => ExLibrisUtility.NewObservableObjectRegistrationHandle(jsonObjectName, objectRepository, func);
 
         public static object ObserveJsonObject(
         string collerFunctionName,

@@ -98,7 +98,7 @@ namespace ExLibris.Core
                params object[] paramObjects)
                => ExcelObserve(
                    callerFunctionName,
-                   () => NewObjectRegistrationHandle<T>(objectName, objectRepository, func),
+                   () => NewObservableObjectRegistrationHandle<T>(objectName, objectRepository, func),
                    paramObjects
                    );
 
@@ -109,7 +109,7 @@ namespace ExLibris.Core
                params object[] paramObjects)
                => ExcelObserve(
                    callerFunctionName,
-                   () => NewObjectRegistrationHandle<T>(objectRepository, func),
+                   () => NewObservableObjectRegistrationHandle<T>(objectRepository, func),
                    paramObjects
                    );
 
@@ -147,16 +147,16 @@ namespace ExLibris.Core
                        );
 
 
-        public static IObjectRegistrationHandle NewObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
-    => new ObjectRegistrationHandle<T>(objectRepository, objectFunc);
+        public static IObjectRegistrationHandle NewObservableObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+            => new ObservableObjectRegistrationHandle<T>(objectRepository, objectFunc);
 
-        public static IObjectRegistrationHandle NewObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
+        public static IObjectRegistrationHandle NewObservableObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            => new ObservableObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
 
         public static IExcelObservable AggreateExcelObservables(IEnumerable<IExcelObservable> excelObservables, object value)
             => new ExcelObservableAggregation(value, excelObservables);
 
-        private class ObjectRegistrationHandle<T> : IObjectRegistrationHandle, IDisposable
+        private class ObservableObjectRegistrationHandle<T> : IObjectRegistrationHandle, IDisposable
         {
             private static readonly Action doNothing = () => { };
 
@@ -169,12 +169,12 @@ namespace ExLibris.Core
             private readonly Func<T> objectFunc;
             private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
 
-            public ObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc) :
+            public ObservableObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc) :
                 this(typeof(T).FullName, objectRepository, objectFunc)
             {
             }
 
-            public ObjectRegistrationHandle(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            public ObservableObjectRegistrationHandle(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
             {
                 HandleKey = $"{objectName}:{Guid.NewGuid().ToString().ToUpper()}";
                 this.objectRepository = objectRepository;
