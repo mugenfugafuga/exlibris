@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ExLibris.Core
 {
@@ -45,6 +46,7 @@ namespace ExLibris.Core
 
 
             private readonly Func<T> objectFunc;
+            private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
 
             public ObservableObjectHandle(Func<T> objectFunc)
             {
@@ -61,19 +63,30 @@ namespace ExLibris.Core
 
             public IDisposable Subscribe(IExcelObserver observer)
             {
+                observers.Add(observer);
+                Task.Run(Update);
+                return this;
+            }
+
+            private void Update()
+            {
                 try
                 {
                     var v = objectFunc();
                     Value = v;
 
-                    observer.OnNext(v);
+                    foreach (var observer in observers)
+                    {
+                        observer.OnNext(v);
+                    }
                 }
                 catch (Exception)
                 {
-                    observer.OnNext(ExcelError.ExcelErrorNA);
+                    foreach (var observer in observers)
+                    {
+                        observer.OnNext(ExcelError.ExcelErrorNA);
+                    }
                 }
-
-                return this;
             }
         }
 
@@ -154,6 +167,7 @@ namespace ExLibris.Core
 
 
             private readonly Func<T> objectFunc;
+            private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
 
             public ObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc) :
                 this(typeof(T).FullName, objectRepository, objectFunc)
@@ -179,19 +193,31 @@ namespace ExLibris.Core
 
             public IDisposable Subscribe(IExcelObserver observer)
             {
+                observers.Add(observer);
+                Task.Run(Update);
+                return this;
+            }
+
+            private void Update()
+            {
                 try
                 {
                     var v = objectFunc();
                     Value = v;
                     objectRepository.RegisterObject(HandleKey, v);
 
-                    observer.OnNext(HandleKey);
+                    foreach(var observer in observers)
+                    {
+                        observer.OnNext(HandleKey);
+                    }
                 }
                 catch (Exception)
                 {
-                    observer.OnNext(ExcelError.ExcelErrorNA);
+                    foreach (var observer in observers)
+                    {
+                        observer.OnNext(ExcelError.ExcelErrorNA);
+                    }
                 }
-                return this;
             }
         }
 
