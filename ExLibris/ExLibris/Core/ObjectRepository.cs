@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ExLibris.Core
 {
@@ -29,6 +30,6 @@ namespace ExLibris.Core
 
         public void Remove(string key) => cache.TryRemove(key, out var _);
 
-        public IEnumerable<string> Keys => cache.Keys;
+        public IEnumerable<string> Keys => cache.Keys.ToArray();
     }
 }

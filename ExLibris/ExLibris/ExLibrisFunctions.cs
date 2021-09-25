@@ -49,32 +49,28 @@ namespace ExLibris
         }
 
         [ExcelFunction(
-            Name = "ExLibris.ObserveRegisteredObjects",
+            Name = "ExLibris.GetRegisteredObjects",
             Category = "ExLibris")]
-        public static object ObserveRegisteredObjects(int periodMilliSec = 10000)
+        public static object GetRegisteredObjects(object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.FuncOrNAIfThrown(() =>
-            {
-                return ExLibrisUtility.ObserveObjectPeriodically(
-                    nameof(ObserveRegisteredObjects),
-                    () => GetRegisteredObjects(support),
-                    periodMilliSec
-                    );
-            });
+            return ExLibrisUtility.ObserveObject(
+                nameof(GetRegisteredObjects),
+                () => GetRegisteredObjects(support),
+                identifier);
         }
 
         private static object[,] GetRegisteredObjects(ExcelFunctionCallSupport support)
         {
-            var keys = support.ObjectRepository.Keys.Cast<object>().ToArray();
+            var keys = support.ObjectRepository.Keys.ToArray();
 
             var vs = new object[keys.Length, 1];
 
             for(var i =0; i < keys.Length; ++i)
             {
-                vs[i, 0] = keys[i];
+                vs[i, 0] = support.ToValue(keys[i]);
             }
 
             return vs;
