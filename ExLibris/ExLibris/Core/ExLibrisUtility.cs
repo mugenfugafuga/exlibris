@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -211,43 +210,56 @@ namespace ExLibris.Core
             private readonly ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private readonly Func<object> func;
             private readonly Timer timer;
+            private readonly int periodMilliSec;
             private object current = null;
-            private object locker = new object();
+            private readonly object locker = new object();
 
             public PeriodicObservationHandle(Func<object> func, int periodMilliSec)
             {
                 this.func = func;
-                this.timer = new Timer(TimerCallback, null, 0, periodMilliSec);
+                this.periodMilliSec = periodMilliSec;
+                this.timer = new Timer(TimerCallback, null, Timeout.Infinite, Timeout.Infinite);
             }
 
             public void Dispose()
             {
+                timer.Change(Timeout.Infinite, Timeout.Infinite);
                 timer.Dispose();
             }
 
             public IDisposable Subscribe(IExcelObserver observer)
             {
                 observers.Add(observer);
+
+                TimerCallback(null);
+                timer.Change(0, periodMilliSec);
                 return this;
             }
 
             private void TimerCallback(object _)
             {
-                var o = func();
-
-                lock (locker)
+                try
                 {
-                    if (current != null && current.Equals(o))
+                    lock (locker)
                     {
-                        return;
+                        var o = func();
+
+                        if (current != null && current.Equals(o))
+                        {
+                            return;
+                        }
+
+                        current = o;
+
+                        foreach (var obs in observers)
+                        {
+                            obs.OnNext(o);
+                        }
                     }
-
-                    current = o;
                 }
-
-                foreach (var obs in observers)
+                catch (Exception)
                 {
-                    obs.OnNext(o);
+                    // ignore exception
                 }
             }
         }
