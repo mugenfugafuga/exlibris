@@ -131,7 +131,7 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionaryOrArray(value))
                     {
-                        return JsonUtility.NewJsonObjectHandle(support.ObjectRepository, () => value);
+                        return JsonUtility.NewObservableJsonObjectHandle(support.ObjectRepository, () => value);
                     }
                     else
                     {
@@ -172,7 +172,8 @@ namespace ExLibris.Json
                 {
                     return ExLibrisUtility.ExcelObserve(
                         nameof(GetJsonKeyValues),
-                        () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support, Convert.ToInt32(depth)),
+                        () => ExLibrisUtility.NewObservableDisposableObject(
+                            () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support, Convert.ToInt32(depth))),
                         objectHandle,
                         configurationHandle,
                         depth);
@@ -196,9 +197,9 @@ namespace ExLibris.Json
             return mb.BuildExcelMatrix();
         }
 
-        internal static IExcelObservable CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support, int depth)
+        internal static (object[,] Table, IEnumerable<IDisposable> Disposables) CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support, int depth)
         {
-            var eos = new List<IExcelObservable>();
+            var disposables = new List<IDisposable>();
             var values = support.NewJsonObjectAccessor(jo).GetJsonValues(depth).ToList();
 
             var mb = support.GetExcelMatrixBuilder(values.Count, 2);
@@ -211,7 +212,8 @@ namespace ExLibris.Json
                 if (JsonUtility.IsJsonDictionaryOrArray(v))
                 {
                     var vv = JsonUtility.NewJsonObjectHandle(support.ObjectRepository, () => v);
-                    eos.Add(vv);
+                    vv.CallRegistration();
+                    disposables.Add(vv);
                     mb[i, 1] = vv.HandleKey;
                 }
                 else
@@ -220,7 +222,7 @@ namespace ExLibris.Json
                 }
             }
 
-            return ExLibrisUtility.AggreateExcelObservables(eos, mb.BuildExcelMatrix());
+            return (mb.BuildExcelMatrix(), disposables);
         }
 
         [ExcelFunction(

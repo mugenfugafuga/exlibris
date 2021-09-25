@@ -147,16 +147,16 @@ namespace ExLibris.Core
                        );
 
 
-        public static IObjectRegistrationHandle NewObservableObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
             => new ObservableObjectRegistrationHandle<T>(objectRepository, objectFunc);
 
-        public static IObjectRegistrationHandle NewObservableObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
             => new ObservableObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
 
-        public static IExcelObservable AggreateExcelObservables(IEnumerable<IExcelObservable> excelObservables, object value)
-            => new ExcelObservableAggregation(value, excelObservables);
+        public static IExcelObservable NewObservableDisposableObject<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+            => new ObservableDisposableObject<T>(generaitor);
 
-        private class ObservableObjectRegistrationHandle<T> : IObjectRegistrationHandle, IDisposable
+        private class ObservableObjectRegistrationHandle<T> : IExcelObservable, IDisposable
         {
             private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private readonly ObjectRegistrationHandle<T> registrationHandle;
@@ -206,46 +206,6 @@ namespace ExLibris.Core
             }
         }
 
-        private class ExcelObservableAggregation : IExcelObservable, IDisposable
-        {
-            private object value;
-            private IEnumerable<IExcelObservable> excelObservables;
-
-            private List<IDisposable> disposables = new List<IDisposable>();
-
-            public ExcelObservableAggregation(object value, IEnumerable<IExcelObservable> excelObservables)
-            {
-                this.value = value;
-                this.excelObservables = excelObservables;
-            }
-
-            public void Dispose()
-            {
-                foreach(var d in disposables)
-                {
-                    d.Dispose();
-                }
-            }
-
-            public IDisposable Subscribe(IExcelObserver observer)
-            {
-                try
-                {
-                    var es = excelObservables.Select(e => e.Subscribe(observer));
-                    disposables.AddRange(es);
-
-                    observer.OnNext(value);
-
-                }
-                catch (Exception)
-                {
-                    observer.OnNext(ExcelError.ExcelErrorNA);
-                }
-
-                return this;
-            }
-        }
-
         private class PeriodicObservationHandle : IExcelObservable, IDisposable
         {
             private readonly ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
@@ -288,6 +248,63 @@ namespace ExLibris.Core
                 foreach (var obs in observers)
                 {
                     obs.OnNext(o);
+                }
+            }
+        }
+
+        private class ObservableDisposableObject<T> : IExcelObservable, IDisposable
+        {
+            private Func<(T Value, IEnumerable<IDisposable> Disposables)> generator;
+            private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
+            private T value;
+            private IEnumerable<IDisposable> disposables;
+
+            public ObservableDisposableObject(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+            {
+                this.generator = generaitor;
+            }
+
+            public void Dispose()
+            {
+                if (disposables != null)
+                {
+                    foreach (var d in disposables)
+                    {
+                        d.Dispose();
+                    }
+                }
+
+                if (value != null && value is IDisposable)
+                {
+                    ((IDisposable)value).Dispose();
+                }
+            }
+
+            public IDisposable Subscribe(IExcelObserver observer)
+            {
+                observers.Add(observer);
+                Task.Run(Update);
+                return this;
+            }
+
+            private void Update()
+            {
+
+                try
+                {
+                    (value, disposables) = generator();
+
+                    foreach (var o in observers)
+                    {
+                        o.OnNext(value);
+                    }
+                }
+                catch (Exception)
+                {
+                    foreach (var o in observers)
+                    {
+                        o.OnNext(ExcelError.ExcelErrorNA);
+                    }
                 }
             }
         }
