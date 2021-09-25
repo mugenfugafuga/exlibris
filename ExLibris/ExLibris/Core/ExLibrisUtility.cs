@@ -158,37 +158,24 @@ namespace ExLibris.Core
 
         private class ObservableObjectRegistrationHandle<T> : IObjectRegistrationHandle, IDisposable
         {
-            private static readonly Action doNothing = () => { };
-
-            public string HandleKey { get; }
-            public readonly ObjectRepository objectRepository;
-
-            public T Value { get; private set; }
-
-
-            private readonly Func<T> objectFunc;
             private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
+            private readonly ObjectRegistrationHandle<T> registrationHandle;
 
-            public ObservableObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc) :
-                this(typeof(T).FullName, objectRepository, objectFunc)
+            public string HandleKey => registrationHandle.HandleKey;
+
+            public ObservableObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc)
             {
+                this.registrationHandle = new ObjectRegistrationHandle<T>(objectRepository, objectFunc);
             }
 
             public ObservableObjectRegistrationHandle(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
             {
-                HandleKey = $"{objectName}:{Guid.NewGuid().ToString().ToUpper()}";
-                this.objectRepository = objectRepository;
-                this.objectFunc = objectFunc;
+                this.registrationHandle = new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
             }
 
             public virtual void Dispose()
             {
-                objectRepository.Remove(HandleKey);
-
-                if (Value != null && Value is IDisposable)
-                {
-                    ((IDisposable)Value).Dispose();
-                }
+                registrationHandle.Dispose();
             }
 
             public IDisposable Subscribe(IExcelObserver observer)
@@ -202,9 +189,7 @@ namespace ExLibris.Core
             {
                 try
                 {
-                    var v = objectFunc();
-                    Value = v;
-                    objectRepository.RegisterObject(HandleKey, v);
+                    registrationHandle.CallRegistration();
 
                     foreach(var observer in observers)
                     {
