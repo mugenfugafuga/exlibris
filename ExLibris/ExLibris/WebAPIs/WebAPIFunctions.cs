@@ -5,13 +5,16 @@ using ExLibris.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 
 namespace ExLibris.WebAPIs
 {
     public static class WebAPIFunctions
     {
+        static WebAPIFunctions()
+        {
+            ExLibrisContext.SecurityProtocolUpdateFunction.Invoke();
+        }
+
         [ExcelFunction(
             Name = "ExLibris.WebAPIs.CreateHeaders",
             Category = "ExLibris.WebAPIs")]

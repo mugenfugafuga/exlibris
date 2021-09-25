@@ -1,15 +1,17 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.WebAPIs;
-using ExLibris.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ExLibris.WebAPIs.Client
 {
     public static class WebAPIClientFunctions
     {
+        static WebAPIClientFunctions()
+        {
+            ExLibrisContext.SecurityProtocolUpdateFunction.Invoke();
+        }
+
         [ExcelFunction(
             Name = "ExLibris.WebAPIs.Client.CreateWebAPIClient",
             Category = "ExLibris.WebAPIs")]

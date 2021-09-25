@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -10,11 +9,6 @@ namespace ExLibris.Core.WebAPIs
 {
     public class WebAPIClient : IDisposable
     {
-        static WebAPIClient()
-        {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-        }
-
         private readonly CancellationTokenSource source = new CancellationTokenSource();
         private readonly HttpClient client;
 

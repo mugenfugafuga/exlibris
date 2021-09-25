@@ -7,6 +7,11 @@ namespace ExLibris.WebSockets
 {
     public static class WebSocketFunctions
     {
+        static WebSocketFunctions()
+        {
+            ExLibrisContext.SecurityProtocolUpdateFunction.Invoke();
+        }
+
         [ExcelFunction(
             Name = "ExLibris.WebSockets.OpenWebSocket",
             Category = "ExLibris.WebSockets")]

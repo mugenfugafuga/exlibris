@@ -139,6 +139,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\CallOnce.cs" />
     <Compile Include="Core\ExcelMatrixAccessor.cs" />
     <Compile Include="Core\ExcelMatrixBuilder.cs" />
     <Compile Include="Core\ExLibrisUtility.cs" />
