@@ -27,8 +27,6 @@ namespace ExLibris.Core
             }
         }
 
-        public static IExcelObservable NewObservableObjectHandle<T>(Func<T> func) => new ObservableObjectHandle<T>(func);
-
         public static object RunAsync(
             string callerFunctionName,
             Func<object> objectFunction,
@@ -39,7 +37,78 @@ namespace ExLibris.Core
                 () => FuncOrNAIfThrown(() =>objectFunction())
                 );
 
-        private class ObservableObjectHandle<T> : IExcelObservable, IDisposable
+        public static object ExcelObserve(
+            string callerFunctionName,
+            Func<IExcelObservable> func,
+            params object[] paramObjects
+            )
+            => ExcelAsyncUtil.Observe(
+                       callerFunctionName,
+                       paramObjects,
+                       () => func()
+                       );
+
+        public static object ExcelObserveObjectAsync<T>(
+            string callerFunctionName,
+            Func<T> func,
+            params object[] paramObjects
+            )
+            => ExcelObserve(
+                callerFunctionName,
+                () => NewObservableObjectHandleAsync<T>(func),
+                paramObjects
+                );
+
+
+        public static object ExcelObserveObjectRegistrationAsync<T>(
+               string callerFunctionName,
+               string objectName,
+               ObjectRepository objectRepository,
+               Func<T> func,
+               params object[] paramObjects)
+               => ExcelObserve(
+                   callerFunctionName,
+                   () => NewObservableObjectRegistrationHandleAsync<T>(objectName, objectRepository, func),
+                   paramObjects
+                   );
+
+        public static object ExcelObserveObjectRegistrationAsync<T>(
+               string callerFunctionName,
+               ObjectRepository objectRepository,
+               Func<T> func,
+               params object[] paramObjects)
+               => ExcelObserve(
+                   callerFunctionName,
+                   () => NewObservableObjectRegistrationHandleAsync<T>(objectRepository, func),
+                   paramObjects
+                   );
+
+        public static object ExcelObserveObjectPeriodically(
+               string callerFunctionName,
+               Func<object> func,
+               int periodMilliSec,
+               params object[] paramObjects)
+               => ExcelAsyncUtil.Observe(
+                       callerFunctionName,
+                       paramObjects,
+                       () => new PeriodicObservationHandle(func, periodMilliSec)
+                       );
+
+        public static IExcelObservable NewObservableObjectHandleAsync<T>(Func<T> func) => new ObservableObjectHandleAsync<T>(func);
+
+        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(ObjectRegistrationHandle<T> objectRegistrationHandle)
+            => new ObservableObjectRegistrationHandleAsync<T>(objectRegistrationHandle);
+
+        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+            => NewObservableObjectRegistrationHandleAsync(new ObjectRegistrationHandle<T>(objectRepository, objectFunc));
+
+        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            => NewObservableObjectRegistrationHandleAsync(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
+
+        public static IExcelObservable NewObservableDisposableObjectAsync<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+            => new ObservableDisposableObjectAsync<T>(generaitor);
+
+        private class ObservableObjectHandleAsync<T> : IExcelObservable, IDisposable
         {
             public T Value { get; private set; }
 
@@ -47,14 +116,14 @@ namespace ExLibris.Core
             private readonly Func<T> objectFunc;
             private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
 
-            public ObservableObjectHandle(Func<T> objectFunc)
+            public ObservableObjectHandleAsync(Func<T> objectFunc)
             {
                 this.objectFunc = objectFunc;
             }
 
             public void Dispose()
             {
-                if(Value != null && Value is IDisposable)
+                if (Value != null && Value is IDisposable)
                 {
                     ((IDisposable)Value).Dispose();
                 }
@@ -88,72 +157,6 @@ namespace ExLibris.Core
                 }
             }
         }
-
-        public static object ExcelObserveObjectRegistrationAsync<T>(
-               string callerFunctionName,
-               string objectName,
-               ObjectRepository objectRepository,
-               Func<T> func,
-               params object[] paramObjects)
-               => ExcelObserve(
-                   callerFunctionName,
-                   () => NewObservableObjectRegistrationHandleAsync<T>(objectName, objectRepository, func),
-                   paramObjects
-                   );
-
-        public static object ExcelObserveObjectRegistrationAsync<T>(
-               string callerFunctionName,
-               ObjectRepository objectRepository,
-               Func<T> func,
-               params object[] paramObjects)
-               => ExcelObserve(
-                   callerFunctionName,
-                   () => NewObservableObjectRegistrationHandleAsync<T>(objectRepository, func),
-                   paramObjects
-                   );
-
-        public static object ObserveObjectPeriodically(
-               string callerFunctionName,
-               Func<object> func,
-               int periodMilliSec,
-               params object[] paramObjects)
-               => ExcelAsyncUtil.Observe(
-                       callerFunctionName,
-                       paramObjects,
-                       () => new PeriodicObservationHandle(func, periodMilliSec)
-                       );
-
-        public static object ObserveObject<T>(
-            string callerFunctionName,
-            Func<T> func,
-            params object[] paramObjects
-            )
-            => ExcelObserve(
-                callerFunctionName,
-                () => NewObservableObjectHandle<T>(func),
-                paramObjects
-                );
-
-        public static object ExcelObserve(
-            string callerFunctionName,
-            Func<IExcelObservable> func,
-            params object[] paramObjects
-            )
-            => ExcelAsyncUtil.Observe(
-                       callerFunctionName,
-                       paramObjects,
-                       () => func()
-                       );
-
-
-        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObservableObjectRegistrationHandleAsync<T>(new ObjectRegistrationHandle<T>(objectRepository, objectFunc));
-
-        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObservableObjectRegistrationHandleAsync<T>(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
-
-        public static IExcelObservable NewObservableDisposableObjectAsync<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
-            => new ObservableDisposableObjectAsync<T>(generaitor);
 
         private class ObservableObjectRegistrationHandleAsync<T> : IExcelObservable, IDisposable
         {

@@ -54,12 +54,12 @@ namespace ExLibris
         [ExcelFunction(
             Name = prefixFunctionName + nameof(GetRegisteredObjects),
             Category = categoryName)]
-        public static object GetRegisteredObjects(object identifier)
+        public static object GetRegisteredObjectsAsync(object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.ObserveObject(
+            return ExLibrisUtility.ExcelObserveObjectAsync(
                 nameof(GetRegisteredObjects),
                 () => GetRegisteredObjects(support),
                 identifier);

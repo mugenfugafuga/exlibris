@@ -138,7 +138,7 @@ namespace ExLibris.Json
                     }
                     else
                     {
-                        return ExLibrisUtility.NewObservableObjectHandle(() => support.ToExcel(value));
+                        return ExLibrisUtility.NewObservableObjectHandleAsync(() => support.ToExcel(value));
                     }
                 },
                 objectHandle,

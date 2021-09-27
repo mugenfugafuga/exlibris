@@ -55,7 +55,7 @@ namespace ExLibris.WebSockets
             {
                 var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
-                return ExLibrisUtility.ObserveObjectPeriodically(
+                return ExLibrisUtility.ExcelObserveObjectPeriodically(
                     nameof(ObserveWebSocketStatus),
                     () => client.WebSocket.State.ToString(),
                     periodMilliSec,
@@ -77,7 +77,7 @@ namespace ExLibris.WebSockets
             {
                 var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
 
-                return WebSocketUtility.ObserveWebSocketMessage(
+                return WebSocketUtility.ExcelObserveWebSocketMessage(
                     nameof(ObserveWebSocketMessage),
                     client,
                     webSocketHandle

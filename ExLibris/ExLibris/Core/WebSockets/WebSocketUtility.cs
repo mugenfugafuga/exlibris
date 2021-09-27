@@ -4,7 +4,7 @@ namespace ExLibris.Core.WebSockets
 {
     static class WebSocketUtility
     {
-        public static object ObserveWebSocketMessage(
+        public static object ExcelObserveWebSocketMessage(
             string collerFunctionName,
             WebsocketClient client,
             params object[] paramObjects)
