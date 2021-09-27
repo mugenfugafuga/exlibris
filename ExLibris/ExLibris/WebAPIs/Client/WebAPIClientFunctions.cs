@@ -20,7 +20,7 @@ namespace ExLibris.WebAPIs.Client
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.ExcelObserveObjectRegistration(
+            return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
                 nameof(CreateWebAPIClient),
                 support.ObjectRepository,
                 () =>
@@ -55,7 +55,7 @@ namespace ExLibris.WebAPIs.Client
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.ExcelObserveObjectRegistration(
+            return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
                 nameof(WebAPIGet),
                 support.ObjectRepository,
                 () =>
@@ -92,7 +92,7 @@ namespace ExLibris.WebAPIs.Client
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            return ExLibrisUtility.ExcelObserveObjectRegistration(
+            return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
                 nameof(WebAPIPost),
                 support.ObjectRepository,
                 () =>

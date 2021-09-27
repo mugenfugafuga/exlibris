@@ -18,7 +18,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => CreateJsonObject(
@@ -78,7 +78,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => CreateJsonObjectByJsonText(
@@ -131,7 +131,7 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionaryOrArray(value))
                     {
-                        return JsonUtility.NewObservableJsonObjectHandle(support.ObjectRepository, () => value);
+                        return JsonUtility.NewObservableJsonObjectHandleAsync(support.ObjectRepository, () => value);
                     }
                     else
                     {
@@ -233,7 +233,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonArray),
                 support.ObjectRepository,
                 () => CreateJsonArray(param, support),
@@ -356,7 +356,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => SeachJsonArrayElements(

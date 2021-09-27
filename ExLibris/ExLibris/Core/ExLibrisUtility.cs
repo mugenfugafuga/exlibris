@@ -89,7 +89,7 @@ namespace ExLibris.Core
             }
         }
 
-        public static object ExcelObserveObjectRegistration<T>(
+        public static object ExcelObserveObjectRegistrationAsync<T>(
                string callerFunctionName,
                string objectName,
                ObjectRepository objectRepository,
@@ -97,18 +97,18 @@ namespace ExLibris.Core
                params object[] paramObjects)
                => ExcelObserve(
                    callerFunctionName,
-                   () => NewObservableObjectRegistrationHandle<T>(objectName, objectRepository, func),
+                   () => NewObservableObjectRegistrationHandleAsync<T>(objectName, objectRepository, func),
                    paramObjects
                    );
 
-        public static object ExcelObserveObjectRegistration<T>(
+        public static object ExcelObserveObjectRegistrationAsync<T>(
                string callerFunctionName,
                ObjectRepository objectRepository,
                Func<T> func,
                params object[] paramObjects)
                => ExcelObserve(
                    callerFunctionName,
-                   () => NewObservableObjectRegistrationHandle<T>(objectRepository, func),
+                   () => NewObservableObjectRegistrationHandleAsync<T>(objectRepository, func),
                    paramObjects
                    );
 
@@ -146,23 +146,23 @@ namespace ExLibris.Core
                        );
 
 
-        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObservableObjectRegistrationHandle<T>(new ObjectRegistrationHandle<T>(objectRepository, objectFunc));
+        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+            => new ObservableObjectRegistrationHandleAsync<T>(new ObjectRegistrationHandle<T>(objectRepository, objectFunc));
 
-        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObservableObjectRegistrationHandle<T>(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
+        public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            => new ObservableObjectRegistrationHandleAsync<T>(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
 
         public static IExcelObservable NewObservableDisposableObject<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
-            => new ObservableDisposableObject<T>(generaitor);
+            => new ObservableDisposableObjectAsync<T>(generaitor);
 
-        private class ObservableObjectRegistrationHandle<T> : IExcelObservable, IDisposable
+        private class ObservableObjectRegistrationHandleAsync<T> : IExcelObservable, IDisposable
         {
             private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private readonly ObjectRegistrationHandle<T> registrationHandle;
 
             public string HandleKey => registrationHandle.HandleKey;
 
-            public ObservableObjectRegistrationHandle(ObjectRegistrationHandle<T> registrationHandle)
+            public ObservableObjectRegistrationHandleAsync(ObjectRegistrationHandle<T> registrationHandle)
             {
                 this.registrationHandle = registrationHandle;
             }
@@ -258,14 +258,14 @@ namespace ExLibris.Core
             }
         }
 
-        private class ObservableDisposableObject<T> : IExcelObservable, IDisposable
+        private class ObservableDisposableObjectAsync<T> : IExcelObservable, IDisposable
         {
             private Func<(T Value, IEnumerable<IDisposable> Disposables)> generator;
             private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private T value;
             private IEnumerable<IDisposable> disposables;
 
-            public ObservableDisposableObject(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+            public ObservableDisposableObjectAsync(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
             {
                 this.generator = generaitor;
             }
