@@ -7,16 +7,19 @@ namespace ExLibris.WebSockets
 {
     public static class WebSocketFunctions
     {
+        private const string categoryName = "ExLibris.WebSockets";
+        private const string prefixFunctionName = categoryName + ".";
+
         [ExcelFunction(
-            Name = "ExLibris.WebSockets.OpenWebSocket",
-            Category = "ExLibris.WebSockets")]
-        public static object OpenWebSocket(string webSocketUri, string subProtocol, object identifier)
+            Name = prefixFunctionName + nameof(OpenWebSocketAsync),
+            Category = categoryName)]
+        public static object OpenWebSocketAsync(string webSocketUri, string subProtocol, object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
-                nameof(OpenWebSocket),
+                nameof(OpenWebSocketAsync),
                 support.ObjectRepository,
                 () =>
                 {
@@ -41,8 +44,8 @@ namespace ExLibris.WebSockets
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebSockets.ObserveWebSocketStatus",
-            Category = "ExLibris.WebSockets")]
+            Name = prefixFunctionName + nameof(ObserveWebSocketStatus),
+            Category = categoryName)]
         public static object ObserveWebSocketStatus(string webSocketHandle, int periodMilliSec = 10000)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -63,8 +66,8 @@ namespace ExLibris.WebSockets
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebSockets.ObserveWebSocketMessage",
-            Category = "ExLibris.WebSockets")]
+            Name = prefixFunctionName + nameof(ObserveWebSocketMessage),
+            Category = categoryName)]
         public static object ObserveWebSocketMessage(string webSocketHandle)
         {
             var context = ExLibrisContext.DefaultContext;

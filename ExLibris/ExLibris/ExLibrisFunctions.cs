@@ -8,16 +8,19 @@ namespace ExLibris
 {
     public static class ExLibrisFunctions
     {
+        private const string categoryName = "ExLibris";
+        private const string prefixFunctionName = categoryName + ".";
+
         [ExcelFunction(
-            Name = "ExLibris.LoadConfiguration",
-            Category = "ExLibris")]
-        public static object LoadConfiguration(object[,] matrix)
+            Name = prefixFunctionName + nameof(LoadConfigurationAsync),
+            Category = categoryName)]
+        public static object LoadConfigurationAsync(object[,] matrix)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
-                nameof(LoadConfiguration),
+                nameof(LoadConfigurationAsync),
                 support.ObjectRepository,
                 () =>
                 {
@@ -31,15 +34,15 @@ namespace ExLibris
        }
 
         [ExcelFunction(
-            Name = "ExLibris.DumpObject",
-            Category = "ExLibris")]
-        public static object DumpObject(string objectHandle)
+            Name = prefixFunctionName + nameof(DumpObjectAsync),
+            Category = categoryName)]
+        public static object DumpObjectAsync(string objectHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.RunAsync(
-                nameof(DumpObject),
+                nameof(DumpObjectAsync),
                 () => JsonFunctions.CreateJsonKeyValueTable(
                     JsonObjectSerialiser.ToJsonObject(
                         support.ObjectRepository.GetObject(objectHandle)),
@@ -49,8 +52,8 @@ namespace ExLibris
         }
 
         [ExcelFunction(
-            Name = "ExLibris.GetRegisteredObjects",
-            Category = "ExLibris")]
+            Name = prefixFunctionName + nameof(GetRegisteredObjects),
+            Category = categoryName)]
         public static object GetRegisteredObjects(object identifier)
         {
             var context = ExLibrisContext.DefaultContext;

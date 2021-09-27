@@ -12,16 +12,19 @@ namespace ExLibris.WebAPIs.Client
             ExLibrisContext.SecurityProtocolUpdateFunction.Invoke();
         }
 
+        private const string categoryName = "ExLibris.WebAPIs.Client";
+        private const string prefixFunctionName = categoryName + ".";
+
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.Client.CreateWebAPIClient",
-            Category = "ExLibris.WebAPIs")]
-        public static object CreateWebAPIClient(string baseUri, string headersHandle, object identifier)
+            Name = prefixFunctionName + nameof(CreateWebAPIClientAsync),
+            Category = categoryName)]
+        public static object CreateWebAPIClientAsync(string baseUri, string headersHandle, object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
-                nameof(CreateWebAPIClient),
+                nameof(CreateWebAPIClientAsync),
                 support.ObjectRepository,
                 () =>
                 {
@@ -48,8 +51,8 @@ namespace ExLibris.WebAPIs.Client
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.Client.WebAPIGet",
-            Category = "ExLibris.WebAPIs")]
+            Name = prefixFunctionName + nameof(WebAPIGet),
+            Category = categoryName)]
         public static object WebAPIGet(string clientHandle, string requestUri, object identifier)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -85,8 +88,8 @@ namespace ExLibris.WebAPIs.Client
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.Client.WebAPIPost",
-            Category = "ExLibris.WebAPIs")]
+            Name = prefixFunctionName + nameof(WebAPIPost),
+            Category = categoryName)]
         public static object WebAPIPost(string clientHandle, string requestUri, object requestContent, bool formContent, object identifier)
         {
             var context = ExLibrisContext.DefaultContext;

@@ -152,7 +152,7 @@ namespace ExLibris.Core
         public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
             => new ObservableObjectRegistrationHandleAsync<T>(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
 
-        public static IExcelObservable NewObservableDisposableObject<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+        public static IExcelObservable NewObservableDisposableObjectAsync<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
             => new ObservableDisposableObjectAsync<T>(generaitor);
 
         private class ObservableObjectRegistrationHandleAsync<T> : IExcelObservable, IDisposable

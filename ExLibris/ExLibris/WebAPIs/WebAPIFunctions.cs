@@ -15,16 +15,19 @@ namespace ExLibris.WebAPIs
             ExLibrisContext.SecurityProtocolUpdateFunction.Invoke();
         }
 
+        private const string categoryName = "ExLibris.WebAPIs";
+        private const string prefixFunctionName = categoryName + ".";
+
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.CreateHeaders",
-            Category = "ExLibris.WebAPIs")]
-        public static object CreateHeaders(object[,] matrix)
+            Name = prefixFunctionName + nameof(CreateHeadersAsync),
+            Category = categoryName)]
+        public static object CreateHeadersAsync(object[,] matrix)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
             return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
-                nameof(CreateHeaders),
+                nameof(CreateHeadersAsync),
                 support.ObjectRepository,
                 () =>
                 {
@@ -36,8 +39,8 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.BuildUri",
-            Category = "ExLibris.WebAPIs")]
+            Name = prefixFunctionName + nameof(BuildUri),
+            Category = categoryName)]
         public static object BuildUri(string requestUri, object parameters)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -81,8 +84,8 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.WebAPIRequestContent",
-            Category = "ExLibris.WebAPIs")]
+            Name = prefixFunctionName + nameof(WebAPIResponseContent),
+            Category = categoryName)]
         public static object WebAPIResponseContent(string responseHandle)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -101,8 +104,8 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.WebAPIResponseStatus",
-            Category = "ExLibris.WebAPIs")]
+            Name = prefixFunctionName + nameof(WebAPIResponseStatus),
+            Category = categoryName)]
         public static object WebAPIResponseStatus(string responseHandle, bool codeOnly = false)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -122,8 +125,8 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.WebAPIResponseHeader",
-            Category = "ExLibris.WebAPIs")]
+            Name = prefixFunctionName + nameof(WebAPIResponseHeader),
+            Category = categoryName)]
         public static object WebAPIResponseHeader(string responseHandle)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -142,8 +145,8 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.GET",
-            Category = "ExLibris.WebAPIs")]
+           Name = prefixFunctionName + "GET",
+           Category = categoryName)]
         public static object WebAPIGet(string requestUri, string headersHandle = null)
         {
             var context = ExLibrisContext.DefaultContext;
@@ -171,8 +174,8 @@ namespace ExLibris.WebAPIs
         }
 
         [ExcelFunction(
-            Name = "ExLibris.WebAPIs.POST",
-            Category = "ExLibris.WebAPIs")]
+           Name = prefixFunctionName + "POST",
+           Category = categoryName)]
         public static object WebAPIPost(string requestUri, object requestContent, bool formContent = false, string headersHandle = null)
         {
             var context = ExLibrisContext.DefaultContext;
