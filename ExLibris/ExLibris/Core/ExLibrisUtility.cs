@@ -21,7 +21,7 @@ namespace ExLibris.Core
             {
                 return func();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return ExcelError.ExcelErrorNA;
             }
@@ -34,7 +34,7 @@ namespace ExLibris.Core
             => ExcelAsyncUtil.Run(
                 callerFunctionName,
                 parameters,
-                () => FuncOrNAIfThrown(() =>objectFunction())
+                () => FuncOrNAIfThrown(() => objectFunction())
                 );
 
         public static object ExcelObserve(
@@ -108,15 +108,13 @@ namespace ExLibris.Core
         public static IExcelObservable NewObservableDisposableObjectAsync<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
             => new ObservableDisposableObjectAsync<T>(generaitor);
 
-        private class ObservableObjectHandleAsync<T> : IExcelObservable, IDisposable
+        private abstract class AbstractObservableObjectHandle<T> : IExcelObservable, IDisposable
         {
             public T Value { get; private set; }
 
-
             private readonly Func<T> objectFunc;
-            private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
 
-            public ObservableObjectHandleAsync(Func<T> objectFunc)
+            public AbstractObservableObjectHandle(Func<T> objectFunc)
             {
                 this.objectFunc = objectFunc;
             }
@@ -129,43 +127,44 @@ namespace ExLibris.Core
                 }
             }
 
-            public IDisposable Subscribe(IExcelObserver observer)
-            {
-                observers.Add(observer);
-                Task.Run(Update);
-                return this;
-            }
-
-            private void Update()
+            public void Update(IExcelObserver observer)
             {
                 try
                 {
                     var v = objectFunc();
                     Value = v;
 
-                    foreach (var observer in observers)
-                    {
-                        observer.OnNext(v);
-                    }
+                    observer.OnNext(v);
                 }
                 catch (Exception)
                 {
-                    foreach (var observer in observers)
-                    {
-                        observer.OnNext(ExcelError.ExcelErrorNA);
-                    }
+                    observer.OnNext(ExcelError.ExcelErrorNA);
                 }
+            }
+
+            public abstract IDisposable Subscribe(IExcelObserver observer);
+        }
+
+        private class ObservableObjectHandleAsync<T> : AbstractObservableObjectHandle<T>
+        {
+            public ObservableObjectHandleAsync(Func<T> objectFunc) : base(objectFunc)
+            {
+            }
+
+            public override IDisposable Subscribe(IExcelObserver observer)
+            {
+                Task.Run(() => Update(observer));
+                return this;
             }
         }
 
-        private class ObservableObjectRegistrationHandleAsync<T> : IExcelObservable, IDisposable
+        private abstract class AbstractObservableObjectRegistrationHandle<T> : IExcelObservable, IDisposable
         {
-            private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private readonly ObjectRegistrationHandle<T> registrationHandle;
 
             public string HandleKey => registrationHandle.HandleKey;
 
-            public ObservableObjectRegistrationHandleAsync(ObjectRegistrationHandle<T> registrationHandle)
+            public AbstractObservableObjectRegistrationHandle(ObjectRegistrationHandle<T> registrationHandle)
             {
                 this.registrationHandle = registrationHandle;
             }
@@ -174,42 +173,42 @@ namespace ExLibris.Core
                 registrationHandle.Dispose();
             }
 
-            public IDisposable Subscribe(IExcelObserver observer)
-            {
-                observers.Add(observer);
-                Task.Run(Update);
-                return this;
-            }
-
-            private void Update()
+            public void Update(IExcelObserver observer)
             {
                 try
                 {
                     registrationHandle.CallRegistration();
-
-                    foreach(var observer in observers)
-                    {
-                        observer.OnNext(HandleKey);
-                    }
+                    observer.OnNext(HandleKey);
                 }
                 catch (Exception)
                 {
-                    foreach (var observer in observers)
-                    {
-                        observer.OnNext(ExcelError.ExcelErrorNA);
-                    }
+                    observer.OnNext(ExcelError.ExcelErrorNA);
                 }
+            }
+            public abstract IDisposable Subscribe(IExcelObserver observer);
+        }
+
+        private class ObservableObjectRegistrationHandleAsync<T> : AbstractObservableObjectRegistrationHandle<T>
+        {
+            public ObservableObjectRegistrationHandleAsync(ObjectRegistrationHandle<T> registrationHandle) : base(registrationHandle)
+            {
+            }
+
+            public override IDisposable Subscribe(IExcelObserver observer)
+            {
+                Task.Run(() => Update(observer));
+                return this;
             }
         }
 
         private class PeriodicObservationHandle : IExcelObservable, IDisposable
         {
-            private readonly ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private readonly Func<object> func;
             private readonly Timer timer;
             private readonly int periodMilliSec;
-            private object current = null;
             private readonly object locker = new object();
+            private IExcelObserver observer;
+            private object current = null;
 
             public PeriodicObservationHandle(Func<object> func, int periodMilliSec)
             {
@@ -226,7 +225,7 @@ namespace ExLibris.Core
 
             public IDisposable Subscribe(IExcelObserver observer)
             {
-                observers.Add(observer);
+                this.observer = observer;
 
                 TimerCallback(null);
                 timer.Change(0, periodMilliSec);
@@ -247,11 +246,7 @@ namespace ExLibris.Core
                         }
 
                         current = o;
-
-                        foreach (var obs in observers)
-                        {
-                            obs.OnNext(o);
-                        }
+                        observer.OnNext(o);
                     }
                 }
                 catch (Exception)
@@ -264,7 +259,6 @@ namespace ExLibris.Core
         private class ObservableDisposableObjectAsync<T> : IExcelObservable, IDisposable
         {
             private Func<(T Value, IEnumerable<IDisposable> Disposables)> generator;
-            private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
             private T value;
             private IEnumerable<IDisposable> disposables;
 
@@ -291,29 +285,20 @@ namespace ExLibris.Core
 
             public IDisposable Subscribe(IExcelObserver observer)
             {
-                observers.Add(observer);
-                Task.Run(Update);
+                Task.Run(() => Update(observer));
                 return this;
             }
 
-            private void Update()
+            private void Update(IExcelObserver observer)
             {
-
                 try
                 {
                     (value, disposables) = generator();
-
-                    foreach (var o in observers)
-                    {
-                        o.OnNext(value);
-                    }
+                    observer.OnNext(value);
                 }
                 catch (Exception)
                 {
-                    foreach (var o in observers)
-                    {
-                        o.OnNext(ExcelError.ExcelErrorNA);
-                    }
+                    observer.OnNext(ExcelError.ExcelErrorNA);
                 }
             }
         }
