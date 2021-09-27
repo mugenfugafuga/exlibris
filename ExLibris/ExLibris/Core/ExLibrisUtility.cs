@@ -147,10 +147,10 @@ namespace ExLibris.Core
 
 
         public static IExcelObservable NewObservableObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObservableObjectRegistrationHandle<T>(objectRepository, objectFunc);
+            => new ObservableObjectRegistrationHandle<T>(new ObjectRegistrationHandle<T>(objectRepository, objectFunc));
 
         public static IExcelObservable NewObservableObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
-            => new ObservableObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
+            => new ObservableObjectRegistrationHandle<T>(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
 
         public static IExcelObservable NewObservableDisposableObject<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
             => new ObservableDisposableObject<T>(generaitor);
@@ -162,16 +162,10 @@ namespace ExLibris.Core
 
             public string HandleKey => registrationHandle.HandleKey;
 
-            public ObservableObjectRegistrationHandle(ObjectRepository objectRepository, Func<T> objectFunc)
+            public ObservableObjectRegistrationHandle(ObjectRegistrationHandle<T> registrationHandle)
             {
-                this.registrationHandle = new ObjectRegistrationHandle<T>(objectRepository, objectFunc);
+                this.registrationHandle = registrationHandle;
             }
-
-            public ObservableObjectRegistrationHandle(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
-            {
-                this.registrationHandle = new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc);
-            }
-
             public virtual void Dispose()
             {
                 registrationHandle.Dispose();
