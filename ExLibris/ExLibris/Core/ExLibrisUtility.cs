@@ -48,6 +48,17 @@ namespace ExLibris.Core
                        () => func()
                        );
 
+        public static object ExcelObserveObject<T>(
+            string callerFunctionName,
+            Func<T> func,
+            params object[] paramObjects
+            )
+            => ExcelObserve(
+                callerFunctionName,
+                () => NewObservableObjectHandle<T>(func),
+                paramObjects
+                );
+
         public static object ExcelObserveObjectAsync<T>(
             string callerFunctionName,
             Func<T> func,
@@ -59,6 +70,28 @@ namespace ExLibris.Core
                 paramObjects
                 );
 
+        public static object ExcelObserveObjectRegistration<T>(
+               string callerFunctionName,
+               string objectName,
+               ObjectRepository objectRepository,
+               Func<T> func,
+               params object[] paramObjects)
+               => ExcelObserve(
+                   callerFunctionName,
+                   () => NewObservableObjectRegistrationHandle<T>(objectName, objectRepository, func),
+                   paramObjects
+                   );
+
+        public static object ExcelObserveObjectRegistration<T>(
+               string callerFunctionName,
+               ObjectRepository objectRepository,
+               Func<T> func,
+               params object[] paramObjects)
+               => ExcelObserve(
+                   callerFunctionName,
+                   () => NewObservableObjectRegistrationHandle<T>(objectRepository, func),
+                   paramObjects
+                   );
 
         public static object ExcelObserveObjectRegistrationAsync<T>(
                string callerFunctionName,
@@ -94,7 +127,18 @@ namespace ExLibris.Core
                        () => new PeriodicObservationHandle(func, periodMilliSec)
                        );
 
+        public static IExcelObservable NewObservableObjectHandle<T>(Func<T> func) => new ObservableObjectHandle<T>(func);
+
         public static IExcelObservable NewObservableObjectHandleAsync<T>(Func<T> func) => new ObservableObjectHandleAsync<T>(func);
+
+        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(ObjectRegistrationHandle<T> objectRegistrationHandle)
+            => new ObservableObjectRegistrationHandle<T>(objectRegistrationHandle);
+
+        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(ObjectRepository objectRepository, Func<T> objectFunc)
+            => NewObservableObjectRegistrationHandle(new ObjectRegistrationHandle<T>(objectRepository, objectFunc));
+
+        public static IExcelObservable NewObservableObjectRegistrationHandle<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
+            => NewObservableObjectRegistrationHandle(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
 
         public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(ObjectRegistrationHandle<T> objectRegistrationHandle)
             => new ObservableObjectRegistrationHandleAsync<T>(objectRegistrationHandle);
@@ -104,6 +148,9 @@ namespace ExLibris.Core
 
         public static IExcelObservable NewObservableObjectRegistrationHandleAsync<T>(string objectName, ObjectRepository objectRepository, Func<T> objectFunc)
             => NewObservableObjectRegistrationHandleAsync(new ObjectRegistrationHandle<T>(objectName, objectRepository, objectFunc));
+
+        public static IExcelObservable NewObservableDisposableObject<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+            => new ObservableDisposableObject<T>(generaitor);
 
         public static IExcelObservable NewObservableDisposableObjectAsync<T>(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
             => new ObservableDisposableObjectAsync<T>(generaitor);
@@ -143,6 +190,19 @@ namespace ExLibris.Core
             }
 
             public abstract IDisposable Subscribe(IExcelObserver observer);
+        }
+
+        private class ObservableObjectHandle<T> : AbstractObservableObjectHandle<T>
+        {
+            public ObservableObjectHandle(Func<T> objectFunc) : base(objectFunc)
+            {
+            }
+
+            public override IDisposable Subscribe(IExcelObserver observer)
+            {
+                Update(observer);
+                return this;
+            }
         }
 
         private class ObservableObjectHandleAsync<T> : AbstractObservableObjectHandle<T>
@@ -186,6 +246,19 @@ namespace ExLibris.Core
                 }
             }
             public abstract IDisposable Subscribe(IExcelObserver observer);
+        }
+
+        private class ObservableObjectRegistrationHandle<T> : AbstractObservableObjectRegistrationHandle<T>
+        {
+            public ObservableObjectRegistrationHandle(ObjectRegistrationHandle<T> registrationHandle) : base(registrationHandle)
+            {
+            }
+
+            public override IDisposable Subscribe(IExcelObserver observer)
+            {
+                Update(observer);
+                return this;
+            }
         }
 
         private class ObservableObjectRegistrationHandleAsync<T> : AbstractObservableObjectRegistrationHandle<T>
@@ -256,13 +329,13 @@ namespace ExLibris.Core
             }
         }
 
-        private class ObservableDisposableObjectAsync<T> : IExcelObservable, IDisposable
+        private abstract class AbstractObservableDisposableObject<T> : IExcelObservable, IDisposable
         {
             private Func<(T Value, IEnumerable<IDisposable> Disposables)> generator;
             private T value;
             private IEnumerable<IDisposable> disposables;
 
-            public ObservableDisposableObjectAsync(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
+            public AbstractObservableDisposableObject(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor)
             {
                 this.generator = generaitor;
             }
@@ -283,13 +356,7 @@ namespace ExLibris.Core
                 }
             }
 
-            public IDisposable Subscribe(IExcelObserver observer)
-            {
-                Task.Run(() => Update(observer));
-                return this;
-            }
-
-            private void Update(IExcelObserver observer)
+            public void Update(IExcelObserver observer)
             {
                 try
                 {
@@ -300,6 +367,34 @@ namespace ExLibris.Core
                 {
                     observer.OnNext(ExcelError.ExcelErrorNA);
                 }
+            }
+
+            public abstract IDisposable Subscribe(IExcelObserver observer);
+        }
+
+        private class ObservableDisposableObject<T> : AbstractObservableDisposableObject<T>
+        {
+            public ObservableDisposableObject(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor) : base(generaitor)
+            {
+            }
+
+            public override IDisposable Subscribe(IExcelObserver observer)
+            {
+                Update(observer);
+                return this;
+            }
+        }
+
+        private class ObservableDisposableObjectAsync<T> : AbstractObservableDisposableObject<T>
+        {
+            public ObservableDisposableObjectAsync(Func<(T Value, IEnumerable<IDisposable> Disposables)> generaitor) : base(generaitor)
+            {
+            }
+
+            public override IDisposable Subscribe(IExcelObserver observer)
+            {
+                Task.Run(() => Update(observer));
+                return this;
             }
         }
     }

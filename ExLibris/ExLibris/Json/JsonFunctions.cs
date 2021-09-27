@@ -14,6 +14,24 @@ namespace ExLibris.Json
         private const string prefixFunctionName = categoryName + ".";
 
         [ExcelFunction(
+            Name = prefixFunctionName + nameof(CreateJsonObject),
+            Category = categoryName)]
+        public static object CreateJsonObject(object param, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return JsonUtility.ObserveJsonObject(
+                nameof(CreateJsonObject),
+                support.ObjectRepository,
+                () => CreateJsonObject(
+                    param,
+                    support),
+                param,
+                configurationHandle);
+        }
+
+        [ExcelFunction(
             Name = prefixFunctionName + nameof(CreateJsonObjectAsync),
             Category = categoryName)]
         public static object CreateJsonObjectAsync(object param, string configurationHandle)
@@ -94,27 +112,61 @@ namespace ExLibris.Json
         [ExcelFunction(
             Name = prefixFunctionName + nameof(ShowJsonText),
             Category = categoryName)]
-        public static object ShowJsonText(string objectHandle, bool pretty = false, bool rightNow = false)
+        public static object ShowJsonText(string objectHandle, bool pretty = false)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport();
 
-            if (rightNow)
-            {
-                return pretty ?
-                        JsonObjectSerialiser.ToJsonPrettyText(support.ObjectRepository.GetObject(objectHandle)) :
-                        JsonObjectSerialiser.ToJsonText(support.ObjectRepository.GetObject(objectHandle));
+            return pretty ?
+                    JsonObjectSerialiser.ToJsonPrettyText(support.ObjectRepository.GetObject(objectHandle)) :
+                    JsonObjectSerialiser.ToJsonText(support.ObjectRepository.GetObject(objectHandle));
+        }
 
-            }
-            else
-            {
-                return ExLibrisUtility.RunAsync(
-                    nameof(ShowJsonText),
-                    () => pretty ?
-                            JsonObjectSerialiser.ToJsonPrettyText(support.ObjectRepository.GetObject(objectHandle)) :
-                            JsonObjectSerialiser.ToJsonText(support.ObjectRepository.GetObject(objectHandle)),
-                    objectHandle, pretty);
-            }
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(ShowJsonTextAsync),
+            Category = categoryName)]
+        public static object ShowJsonTextAsync(string objectHandle, bool pretty = false)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.RunAsync(
+                nameof(ShowJsonTextAsync),
+                () => pretty ?
+                        JsonObjectSerialiser.ToJsonPrettyText(support.ObjectRepository.GetObject(objectHandle)) :
+                        JsonObjectSerialiser.ToJsonText(support.ObjectRepository.GetObject(objectHandle)),
+                objectHandle,
+                pretty);
+        }
+
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(GetJsonValue),
+            Category = categoryName)]
+        public static object GetJsonValue(string objectHandle, string keyPath, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return ExLibrisUtility.ExcelObserve(
+                nameof(GetJsonValue),
+                () =>
+                {
+                    var jo = support.ObjectRepository.GetObject(objectHandle);
+                    var value = support.NewJsonObjectAccessor(jo).GetJsonValue(keyPath);
+
+                    if (JsonUtility.IsJsonDictionaryOrArray(value))
+                    {
+                        return JsonUtility.NewObservableJsonObjectHandle(support.ObjectRepository, () => value);
+                    }
+                    else
+                    {
+                        return ExLibrisUtility.NewObservableObjectHandle(() => support.ToExcel(value));
+                    }
+                },
+                objectHandle,
+                keyPath,
+                configurationHandle
+                );
         }
 
         [ExcelFunction(
@@ -145,6 +197,39 @@ namespace ExLibris.Json
                 keyPath,
                 configurationHandle
                 );
+        }
+
+        [ExcelFunction(
+        Name = prefixFunctionName + nameof(GetJsonKeyValues),
+        Category = categoryName)]
+        public static object GetJsonKeyValues(string objectHandle, string configurationHandle, object depth)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return ExLibrisUtility.FuncOrNAIfThrown(() =>
+            {
+                if (ExLibrisUtility.IsExcelError(depth))
+                {
+                    throw new ArgumentException($"{nameof(depth)} is Error.");
+                }
+
+                if (ExLibrisUtility.IsExcelMissing(depth) || ExLibrisUtility.IsExcelEmpty(depth))
+                {
+                    return CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support);
+                }
+                else
+                {
+                    return ExLibrisUtility.ExcelObserve(
+                        nameof(GetJsonKeyValues),
+                        () => ExLibrisUtility.NewObservableDisposableObject(
+                            () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support, Convert.ToInt32(depth))),
+                        objectHandle,
+                        configurationHandle,
+                        depth);
+                }
+
+            });
         }
 
         [ExcelFunction(
@@ -229,6 +314,22 @@ namespace ExLibris.Json
         }
 
         [ExcelFunction(
+            Name = prefixFunctionName + nameof(CreateJsonArray),
+            Category = categoryName)]
+        public static object CreateJsonArray(object[,] param, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return JsonUtility.ObserveJsonObject(
+                nameof(CreateJsonArray),
+                support.ObjectRepository,
+                () => CreateJsonArray(param, support),
+                param,
+                configurationHandle);
+        }
+
+        [ExcelFunction(
             Name = prefixFunctionName + nameof(CreateJsonArrayAsync),
             Category = categoryName)]
         public static object CreateJsonArrayAsync(object[,] param, string configurationHandle)
@@ -265,6 +366,27 @@ namespace ExLibris.Json
             return jo;
         }
 
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(GetJsonTable),
+            Category = categoryName)]
+        public static object GetJsonTable(string objectHandle, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            var jo = support.ObjectRepository.GetObject(objectHandle);
+
+            if (JsonUtility.IsJsonDictionary(jo))
+            {
+                return CreateJsonTable(JsonUtility.CastJsonDictionary(jo), support);
+            }
+            else if (JsonUtility.IsJsonArray(jo))
+            {
+                return CreateJsonTable(JsonUtility.CastJsonArray(jo), support);
+            }
+
+            return support.ToExcel(jo);
+        }
 
         [ExcelFunction(
             Name = prefixFunctionName + nameof(GetJsonTableAsync),
@@ -352,6 +474,28 @@ namespace ExLibris.Json
         }
 
         [ExcelFunction(
+            Name = prefixFunctionName + nameof(SeachJsonArrayElements),
+            Category = categoryName)]
+        public static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return JsonUtility.ObserveJsonObject(
+                nameof(SeachJsonArrayElements),
+                support.ObjectRepository,
+                () => SeachJsonArrayElements(
+                    jsonArrayHandle,
+                    relativeKeyPath,
+                    searchValue,
+                    support),
+                jsonArrayHandle,
+                relativeKeyPath,
+                searchValue,
+                configurationHandle);
+        }
+
+        [ExcelFunction(
             Name = prefixFunctionName + nameof(SeachJsonArrayElementsAsync),
             Category = categoryName)]
         public static object SeachJsonArrayElementsAsync(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
@@ -362,7 +506,7 @@ namespace ExLibris.Json
             return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObjectAsync),
                 support.ObjectRepository,
-                () => SeachJsonArrayElementsAsync(
+                () => SeachJsonArrayElements(
                     jsonArrayHandle,
                     relativeKeyPath,
                     searchValue,
@@ -373,7 +517,7 @@ namespace ExLibris.Json
                 configurationHandle);
         }
 
-        public static object SeachJsonArrayElementsAsync(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
+        public static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
         {
             var jo = support.ObjectRepository.GetObject(jsonArrayHandle);
 
