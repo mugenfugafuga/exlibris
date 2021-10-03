@@ -1,6 +1,5 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
-using ExLibris.Core.Json;
 using System.Linq;
 
 namespace ExLibris
@@ -21,11 +20,7 @@ namespace ExLibris
             return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
                 nameof(LoadConfigurationAsync),
                 support.ObjectRepository,
-                () =>
-                {
-                    var jo = support.CreateJsonObject(matrix);
-                    return JsonObjectSerialiser.ToObject<ExLibrisConfiguration>(jo);
-                },
+                () => support.CreateObject<ExLibrisConfiguration>(matrix),
                 matrix
                 );
        }

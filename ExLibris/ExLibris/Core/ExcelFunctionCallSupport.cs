@@ -57,6 +57,9 @@ namespace ExLibris.Core
             return job.BuildJsonObject();
         }
 
+        public T CreateObject<T>(object[,] excelMatrix)
+            => JsonObjectSerialiser.ToObject<T>(CreateJsonObject(excelMatrix));
+
         public object[,] CreateJsonKeyValueMatrix(object jsonObject)
         {
             var jo = JsonUtility.IsJsonDictionaryOrArray(jsonObject) ?
