@@ -1,7 +1,6 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.Json;
-using ExLibris.Json;
 using System.Linq;
 
 namespace ExLibris
@@ -24,9 +23,7 @@ namespace ExLibris
                 support.ObjectRepository,
                 () =>
                 {
-                    var ema = support.GetExcelMatrixAccessor(matrix);
-                    var jo = JsonFunctions.CreateJsonObjectByMatrix(ema, support);
-
+                    var jo = support.CreateJsonObject(matrix);
                     return JsonObjectSerialiser.ToObject<ExLibrisConfiguration>(jo);
                 },
                 matrix
@@ -43,10 +40,7 @@ namespace ExLibris
 
             return ExLibrisUtility.RunAsync(
                 nameof(DumpObjectAsync),
-                () => JsonFunctions.CreateJsonKeyValueTable(
-                    JsonObjectSerialiser.ToJsonObject(
-                        support.ObjectRepository.GetObject(objectHandle)),
-                        support),
+                () => support.CreateJsonKeyValueMatrix(support.ObjectRepository.GetObject(objectHandle)),
                 objectHandle);
 
         }

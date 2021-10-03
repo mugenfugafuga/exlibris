@@ -51,16 +51,16 @@ namespace ExLibris.Json
 
         private static object CreateJsonObject(object param, ExcelFunctionCallSupport support)
         {
-            if (param is object[,])
+            if (param is object[,] matrix)
             {
-                return CreateJsonObjectByMatrix(support.GetExcelMatrixAccessor((object[,])param), support);
+                return support.CreateJsonObject(matrix);
             }
 
             var value = support.ToValue(param);
 
-            if (param is string)
+            if (param is string stringValue)
             {
-                return CreateJsonObjectByJsonText((string)value, support);
+                return CreateJsonObjectByJsonText(stringValue, support);
             }
 
             {
@@ -68,21 +68,6 @@ namespace ExLibris.Json
                             .SetOnlyRootValue(value)
                             .BuildJsonObject();
             }
-        }
-
-        internal static object CreateJsonObjectByMatrix(ExcelMatrixAccessor matrix, ExcelFunctionCallSupport support)
-        {
-            var job = support.NewJsonObjectBuilder();
-
-            foreach (var row in matrix.Rows)
-            {
-                var keypath = (string)row[0];
-                var value = row[1];
-
-                job.AddJsonValue(keypath, value);
-            }
-
-            return job.BuildJsonObject();
         }
 
         private static object CreateJsonObjectByJsonText(string jsonText, ExcelFunctionCallSupport support)
@@ -216,7 +201,7 @@ namespace ExLibris.Json
 
                 if (ExLibrisUtility.IsExcelMissing(depth) || ExLibrisUtility.IsExcelEmpty(depth))
                 {
-                    return CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support);
+                    return support.CreateJsonKeyValueMatrix(support.ObjectRepository.GetObject(objectHandle));
                 }
                 else
                 {
@@ -251,7 +236,7 @@ namespace ExLibris.Json
                 {
                     return ExLibrisUtility.RunAsync(
                         nameof(GetJsonKeyValuesAsync),
-                        () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support),
+                        () => support.CreateJsonKeyValueMatrix(support.ObjectRepository.GetObject(objectHandle)),
                         objectHandle,
                         configurationHandle,
                         depth);
@@ -270,22 +255,7 @@ namespace ExLibris.Json
             });
         }
 
-        internal static object[,] CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support)
-        {
-            var values = support.NewJsonObjectAccessor(jo).GetJsonValues().ToList();
-
-            var mb = support.GetExcelMatrixBuilder(values.Count, 2);
-
-            for (var i = 0; i < values.Count; ++i)
-            {
-                mb[i, 0] = values[i].KeyPath;
-                mb[i, 1] = values[i].Value;
-            }
-
-            return mb.BuildExcelMatrix();
-        }
-
-        internal static (object[,] Table, IEnumerable<IDisposable> Disposables) CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support, int depth)
+        private static (object[,] Table, IEnumerable<IDisposable> Disposables) CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support, int depth)
         {
             var disposables = new List<IDisposable>();
             var values = support.NewJsonObjectAccessor(jo).GetJsonValues(depth).ToList();

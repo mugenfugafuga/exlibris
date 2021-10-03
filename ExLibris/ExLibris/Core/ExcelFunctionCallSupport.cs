@@ -1,5 +1,6 @@
 ﻿using ExLibris.Core.Json;
 using System;
+using System.Linq;
 
 namespace ExLibris.Core
 {
@@ -35,8 +36,50 @@ namespace ExLibris.Core
         public JsonObjectBuilder NewJsonObjectBuilder() => new JsonObjectBuilder(ObjectRepository, GetJsonValueConverter());
 
         public object ToValue(object excelValue) => GetExcelValueConverter().ToValue(excelValue);
+
         public object ToExcel(object value) => GetExcelValueConverter().ToExcel(value);
 
         public string ToValueAsString(object excelValue) => GetExcelValueConverter().ToValue(excelValue) as string;
+
+        public object CreateJsonObject(object[,] excelMatrix)
+        {
+            var matrix = GetExcelMatrixAccessor(excelMatrix);
+            var job = NewJsonObjectBuilder();
+
+            foreach (var row in matrix.Rows)
+            {
+                var keypath = (string)row[0];
+                var value = row[1];
+
+                job.AddJsonValue(keypath, value);
+            }
+
+            return job.BuildJsonObject();
+        }
+
+        public object[,] CreateJsonKeyValueMatrix(object jsonObject)
+        {
+            var jo = JsonUtility.IsJsonDictionaryOrArray(jsonObject) ?
+                jsonObject :
+                JsonObjectSerialiser.ToJsonObject(jsonObject);
+
+            return CreateJsonKeyValueMatrixFromJsonObject(jo);
+        }
+
+
+        private object[,] CreateJsonKeyValueMatrixFromJsonObject(object jsonObject)
+        {
+            var values = NewJsonObjectAccessor(jsonObject).GetJsonValues().ToList();
+
+            var mb = GetExcelMatrixBuilder(values.Count, 2);
+
+            for (var i = 0; i < values.Count; ++i)
+            {
+                mb[i, 0] = values[i].KeyPath;
+                mb[i, 1] = values[i].Value;
+            }
+
+            return mb.BuildExcelMatrix();
+        }
     }
 }

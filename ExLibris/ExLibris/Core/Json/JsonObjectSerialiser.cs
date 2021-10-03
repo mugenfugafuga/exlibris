@@ -12,6 +12,8 @@ namespace ExLibris.Core.Json
 
         public static object ToJsonObject<T>(T obj) => JsonSerializer.Deserialize<object>(JsonSerializer.Serialize(obj));
 
+        public static object ToJsonObject(object obj) => JsonSerializer.Deserialize<object>(JsonSerializer.NonGeneric.Serialize(obj));
+
         public static T ToObject<T>(object jsonOblect) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(jsonOblect));
     }
 }

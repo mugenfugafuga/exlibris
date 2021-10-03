@@ -1,7 +1,6 @@
 ﻿using ExcelDna.Integration;
 using ExLibris.Core;
 using ExLibris.Core.WebAPIs;
-using ExLibris.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +30,7 @@ namespace ExLibris.WebAPIs
                 support.ObjectRepository,
                 () =>
                 {
-                    var jo = JsonFunctions.CreateJsonObjectByMatrix(support.GetExcelMatrixAccessor(matrix), support);
+                    var jo = support.CreateJsonObject(matrix);
                     return Core.Json.JsonObjectSerialiser.ToObject<WebAPIHeaders>(jo);
                 },
                 matrix
@@ -69,7 +68,7 @@ namespace ExLibris.WebAPIs
                 }
 
                 var jo = param is object[,] matrix ?
-                    JsonFunctions.CreateJsonObjectByMatrix(support.GetExcelMatrixAccessor(matrix), support) :
+                    support.CreateJsonObject(matrix) :
                     support.ObjectRepository.GetObject((string)param);
 
                 return support.NewJsonObjectAccessor(jo)
