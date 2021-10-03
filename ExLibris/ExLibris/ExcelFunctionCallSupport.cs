@@ -1,10 +1,11 @@
-﻿using ExLibris.Core.Json;
+﻿using ExLibris.Core;
+using ExLibris.Core.Json;
 using System;
 using System.Linq;
 
-namespace ExLibris.Core
+namespace ExLibris
 {
-    public class ExcelFunctionCallSupport
+    class ExcelFunctionCallSupport
     {
         private Lazy<ExcelValueConverter> lazyExcelValueConverter;
         private Lazy<JsonValueConverter> lazyJsonValueConverter;

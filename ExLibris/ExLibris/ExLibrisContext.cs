@@ -1,13 +1,14 @@
-﻿using System.Net;
+﻿using ExLibris.Core;
+using System.Net;
 
-namespace ExLibris.Core
+namespace ExLibris
 {
-    public class ExLibrisContext
+    class ExLibrisContext
     {
         public static CallOnce SecurityProtocolUpdateFunction = new CallOnce(()
             => ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12);
 
-        public static ExLibrisContext DefaultContext = new ExLibrisContext();
+        public static ExLibrisContext DefaultContext { get; } = new ExLibrisContext();
 
         public ObjectRepository ObjectRepository { get; set; } = new ObjectRepository();
 

@@ -487,7 +487,7 @@ namespace ExLibris.Json
                 configurationHandle);
         }
 
-        public static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
+        private static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
         {
             var jo = support.ObjectRepository.GetObject(jsonArrayHandle);
 

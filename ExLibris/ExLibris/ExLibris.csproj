@@ -147,7 +147,7 @@
     <Compile Include="Core\ExLibrisConfiguration.cs" />
     <Compile Include="Core\ExcelValueConfiguration.cs" />
     <Compile Include="Core\ExcelValueTo.cs" />
-    <Compile Include="Core\ExcelFunctionCallSupport.cs" />
+    <Compile Include="ExcelFunctionCallSupport.cs" />
     <Compile Include="Core\Json\DoubleToDateTextShaper.cs" />
     <Compile Include="Core\Json\IJsonValueShaper.cs" />
     <Compile Include="Core\Json\JsonObjectAccessor.cs" />
@@ -167,7 +167,7 @@
     <Compile Include="Core\WebSockets\IWebsocketListener.cs" />
     <Compile Include="Core\WebSockets\WebsocketClient.cs" />
     <Compile Include="Core\WebSockets\WebSocketUtility.cs" />
-    <Compile Include="Core\ExLibrisContext.cs" />
+    <Compile Include="ExLibrisContext.cs" />
     <Compile Include="ExLibrisFunctions.cs" />
     <Compile Include="Json\JsonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
