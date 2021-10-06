@@ -147,6 +147,8 @@
     <Compile Include="Core\ExLibrisConfiguration.cs" />
     <Compile Include="Core\ExcelValueConfiguration.cs" />
     <Compile Include="Core\ExcelValueTo.cs" />
+    <Compile Include="Core\WebAPIs\FormRequest.cs" />
+    <Compile Include="Core\WebAPIs\FormValue.cs" />
     <Compile Include="ExcelFunctionCallSupport.cs" />
     <Compile Include="Core\Json\DoubleToDateTextShaper.cs" />
     <Compile Include="Core\Json\IJsonValueShaper.cs" />

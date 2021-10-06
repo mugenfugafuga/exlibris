@@ -1,6 +1,7 @@
 ﻿using ExLibris.Core;
 using ExLibris.Core.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ExLibris
@@ -84,6 +85,28 @@ namespace ExLibris
             }
 
             return mb.BuildExcelMatrix();
+        }
+
+        public IEnumerable<(string Key, string Value)> ConvertKeyValues(object parameters)
+        {
+            var param = ToValue(parameters);
+
+            if (param != null)
+            {
+
+                var jo = param is object[,] matrix ?
+                    CreateJsonObject(matrix) :
+                    ObjectRepository.GetObject((string)param);
+
+                var kvs = NewJsonObjectAccessor(jo)
+                    .GetJsonValues()
+                    .Select(kv => (kv.KeyPath ?? string.Empty, kv.Value?.ToString() ?? string.Empty));
+
+                foreach (var kv in kvs)
+                {
+                    yield return kv;
+                }
+            }
         }
     }
 }

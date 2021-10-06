@@ -18,6 +18,26 @@ namespace ExLibris.WebAPIs
         private const string prefixFunctionName = categoryName + ".";
 
         [ExcelFunction(
+            Name = prefixFunctionName + nameof(CreateHeaders),
+            Category = categoryName)]
+        public static object CreateHeaders(object[,] matrix)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
+                nameof(CreateHeaders),
+                support.ObjectRepository,
+                () =>
+                {
+                    var jo = support.CreateJsonObject(matrix);
+                    return Core.Json.JsonObjectSerialiser.ToObject<WebAPIHeaders>(jo);
+                },
+                matrix
+                );
+        }
+
+        [ExcelFunction(
             Name = prefixFunctionName + nameof(CreateHeadersAsync),
             Category = categoryName)]
         public static object CreateHeadersAsync(object[,] matrix)
@@ -49,7 +69,7 @@ namespace ExLibris.WebAPIs
                 () =>
                 {
                     var ru = support.ToValueAsString(requestUri);
-                    var p = ConvertParamters(parameters, support);
+                    var p = support.ConvertKeyValues(parameters).ToDictionary(kv => kv.Key, kv => kv.Value);
 
                     return WebAPIUtility.ResolveUri(ru, p);
                 }
@@ -210,6 +230,48 @@ namespace ExLibris.WebAPIs
                 formContent,
                 headersHandle
                 );
+        }
+
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(CreateFormRequest),
+            Category = categoryName)]
+        public static object CreateFormRequest(object parameter)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistration(
+                nameof(CreateFormRequest),
+                support.ObjectRepository,
+                () => ConvertFormRequest(parameter, support),
+                parameter
+                );
+        }
+
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(CreateFormRequestAsync),
+            Category = categoryName)]
+        public static object CreateFormRequestAsync(object parameter)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
+                nameof(CreateFormRequestAsync),
+                support.ObjectRepository,
+                () => ConvertFormRequest(parameter, support),
+                parameter
+                );
+        }
+
+        private static FormRequest ConvertFormRequest(object parameter, ExcelFunctionCallSupport support)
+        {
+            var kvs = support.ConvertKeyValues(parameter);
+
+            return new FormRequest
+            {
+                Values = kvs.Select(kv => new FormValue { Name = kv.Key, Value = kv.Value,}).ToList(),
+            };
         }
     }
 }
