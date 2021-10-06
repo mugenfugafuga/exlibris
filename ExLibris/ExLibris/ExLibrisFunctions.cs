@@ -26,6 +26,30 @@ namespace ExLibris
        }
 
         [ExcelFunction(
+            Name = prefixFunctionName + nameof(DumpDefaultExLibrisConfiguration),
+            Category = categoryName)]
+        public static object DumpDefaultExLibrisConfiguration(string objectHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.FuncOrNAIfThrown(() => support.CreateJsonKeyValueMatrix(context.DefaultExLibrisConfiguration));
+
+        }
+
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(DumpObject),
+            Category = categoryName)]
+        public static object DumpObject(string objectHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport();
+
+            return ExLibrisUtility.FuncOrNAIfThrown(() => support.CreateJsonKeyValueMatrix(support.ObjectRepository.GetObject(objectHandle)));
+
+        }
+
+        [ExcelFunction(
             Name = prefixFunctionName + nameof(DumpObjectAsync),
             Category = categoryName)]
         public static object DumpObjectAsync(string objectHandle)
