@@ -168,9 +168,9 @@ namespace ExLibris.Core
 
             public void Dispose()
             {
-                if (Value != null && Value is IDisposable)
+                if (Value != null && Value is IDisposable val)
                 {
-                    ((IDisposable)Value).Dispose();
+                    val.Dispose();
                 }
             }
 
@@ -331,7 +331,7 @@ namespace ExLibris.Core
 
         private abstract class AbstractObservableDisposableObject<T> : IExcelObservable, IDisposable
         {
-            private Func<(T Value, IEnumerable<IDisposable> Disposables)> generator;
+            private readonly Func<(T Value, IEnumerable<IDisposable> Disposables)> generator;
             private T value;
             private IEnumerable<IDisposable> disposables;
 
@@ -350,9 +350,9 @@ namespace ExLibris.Core
                     }
                 }
 
-                if (value != null && value is IDisposable)
+                if (value != null && value is IDisposable val)
                 {
-                    ((IDisposable)value).Dispose();
+                    val.Dispose();
                 }
             }
 

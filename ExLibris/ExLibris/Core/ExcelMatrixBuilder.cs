@@ -92,8 +92,8 @@ namespace ExLibris.Core
 
         private class RowBuilder : IExcelRowBuilder
         {
-            private ExcelMatrixBuilder matrixBuilder;
-            private int row;
+            private readonly ExcelMatrixBuilder matrixBuilder;
+            private readonly int row;
 
             public RowBuilder(ExcelMatrixBuilder matrixBuilder, int row)
             {

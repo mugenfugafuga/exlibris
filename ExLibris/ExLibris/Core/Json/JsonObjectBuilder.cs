@@ -6,7 +6,7 @@ namespace ExLibris.Core.Json
 {
     public class JsonObjectBuilder
     {
-        private Dictionary<string, object> shortcut = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> shortcut = new Dictionary<string, object>();
         private object root = null;
         private readonly ObjectRepository objectRepository;
         private readonly JsonValueConverter jsonValueConverter;
@@ -142,7 +142,7 @@ namespace ExLibris.Core.Json
 
         private object RevealValue(object value)
         {
-            if(value is string && objectRepository.TryGetObject((string)value, out var v))
+            if(value is string val && objectRepository.TryGetObject(val, out var v))
             {
                 return v;
             }

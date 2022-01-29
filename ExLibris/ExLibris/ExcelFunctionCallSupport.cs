@@ -8,8 +8,8 @@ namespace ExLibris
 {
     class ExcelFunctionCallSupport
     {
-        private Lazy<ExcelValueConverter> lazyExcelValueConverter;
-        private Lazy<JsonValueConverter> lazyJsonValueConverter;
+        private readonly Lazy<ExcelValueConverter> lazyExcelValueConverter;
+        private readonly Lazy<JsonValueConverter> lazyJsonValueConverter;
 
         public ExcelFunctionCallSupport(ObjectRepository objectRepository, ExLibrisConfiguration configuration)
         {
