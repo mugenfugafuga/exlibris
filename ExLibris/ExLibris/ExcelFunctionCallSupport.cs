@@ -59,6 +59,9 @@ namespace ExLibris
             return job.BuildJsonObject();
         }
 
+        public object CreateJsonObject(string jsonText)
+            => JsonUtility.CreateJsonObjectFromJsonText(jsonText, ObjectRepository, GetJsonValueConverter());
+
         public T CreateObject<T>(object[,] excelMatrix)
             => JsonObjectSerialiser.ToObject<T>(CreateJsonObject(excelMatrix));
 

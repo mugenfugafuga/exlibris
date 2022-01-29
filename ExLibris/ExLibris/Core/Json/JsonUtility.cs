@@ -91,5 +91,12 @@ namespace ExLibris.Core.Json
 
         public static IExcelObservable NewObservableJsonObjectHandleAsync(ObjectRepository objectRepository, Func<object> func)
             => ExLibrisUtility.NewObservableObjectRegistrationHandleAsync(NewJsonObjectHandle(objectRepository, func));
+
+        public static object CreateJsonObjectFromJsonText(string jsonText, ObjectRepository objectRepository, JsonValueConverter jsonValueConverter)
+        => JsonObjectSerialiser.JsonTextToJsonObject(jsonText) ??
+                new JsonObjectBuilder(objectRepository, jsonValueConverter)
+                .SetOnlyRootValue(jsonText)
+                .BuildJsonObject();
+
     }
 }

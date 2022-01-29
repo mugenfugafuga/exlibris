@@ -60,7 +60,7 @@ namespace ExLibris.Json
 
             if (param is string stringValue)
             {
-                return CreateJsonObjectByJsonText(stringValue, support);
+                return support.CreateJsonObject(stringValue);
             }
 
             {
@@ -69,12 +69,6 @@ namespace ExLibris.Json
                             .BuildJsonObject();
             }
         }
-
-        private static object CreateJsonObjectByJsonText(string jsonText, ExcelFunctionCallSupport support)
-            => JsonObjectSerialiser.JsonTextToJsonObject(jsonText) ??
-                    support.NewJsonObjectBuilder()
-                    .SetOnlyRootValue(jsonText)
-                    .BuildJsonObject();
 
         [ExcelFunction(
             Name = prefixFunctionName + nameof(LoadJsonTextFileAsync),
@@ -87,9 +81,7 @@ namespace ExLibris.Json
             return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObjectAsync),
                 support.ObjectRepository,
-                () => CreateJsonObjectByJsonText(
-                    File.ReadAllText(jsonFile),
-                    support),
+                () => support.CreateJsonObject(File.ReadAllText(jsonFile)),
                 jsonFile,
                 configurationHandle);
         }
