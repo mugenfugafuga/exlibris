@@ -14,14 +14,14 @@ namespace ExLibris.Core
         private static readonly Pred IsExcelEmpty = ExLibrisUtility.IsExcelEmpty;
 
         private static readonly Pred IsNull = o => o == null;
-        private static readonly Pred IsStringEmpty = o => o is string && string.IsNullOrEmpty((string)o);
+        private static readonly Pred IsStringEmpty = o => o is string oo && string.IsNullOrEmpty(oo);
 
-        private List<Pred> ExcelValueToErrorPreds = new List<Pred>();
-        private List<Pred> ExcelValueToNullPreds = new List<Pred>();
-        private List<Pred> ExcelValueToStringEmptyPreds = new List<Pred>();
+        private readonly List<Pred> ExcelValueToErrorPreds = new List<Pred>();
+        private readonly List<Pred> ExcelValueToNullPreds = new List<Pred>();
+        private readonly List<Pred> ExcelValueToStringEmptyPreds = new List<Pred>();
 
-        private List<Pred> ToExcelEmptyPreds = new List<Pred>();
-        private List<Pred> ToExcelStringEmptyPreds = new List<Pred>();
+        private readonly List<Pred> ToExcelEmptyPreds = new List<Pred>();
+        private readonly List<Pred> ToExcelStringEmptyPreds = new List<Pred>();
 
 
         public ExcelValueConverter(ExcelValueConfiguration configuration)

@@ -97,7 +97,7 @@ namespace ExLibris.Core.Json.Tests
         [ExpectedException(typeof(Exception))]
         public void JsonObjectBuilder_SetOnlyRootValue_Twice_Throw_Text()
         {
-            var jo = NewJsonObjectBuilder()
+            NewJsonObjectBuilder()
                 .SetOnlyRootValue(1)
                 .SetOnlyRootValue(2);
         }
@@ -266,7 +266,7 @@ namespace ExLibris.Core.Json.Tests
         [ExpectedException(typeof(InvalidCastException))]
         public void JsonObjectBuilder_BuildJsonObject_DifferentObjectType_Throw_Text()
         {
-            var jo = NewJsonObjectBuilder()
+            NewJsonObjectBuilder()
                 .AddJsonValue("elem0.elem1", 1)
                 .AddJsonValue("[0].elem1", 2);
         }

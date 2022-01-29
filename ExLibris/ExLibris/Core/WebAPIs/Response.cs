@@ -6,7 +6,7 @@ namespace ExLibris.Core.WebAPIs
 {
     public class Response
     {
-        private HttpResponseMessage httpResponse;
+        private readonly HttpResponseMessage httpResponse;
 
         public Response(HttpResponseMessage httpResponse)
         {

@@ -27,9 +27,9 @@ namespace ExLibris.Core
         {
             objectRepository.Remove(HandleKey);
 
-            if (Value != null && Value is IDisposable)
+            if (Value != null && Value is IDisposable val)
             {
-                ((IDisposable)Value).Dispose();
+                val.Dispose();
             }
         }
 

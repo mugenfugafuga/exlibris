@@ -24,7 +24,7 @@ namespace ExLibris.Core
                 return true;
             }
 
-            obj = default(T);
+            obj = default;
             return false;
         }
 

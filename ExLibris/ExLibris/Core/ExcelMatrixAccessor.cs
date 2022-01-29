@@ -39,8 +39,8 @@ namespace ExLibris.Core
         {
             public int ColumnSize => matrixAccessor.ColumnSize;
 
-            private ExcelMatrixAccessor matrixAccessor;
-            private int row;
+            private readonly ExcelMatrixAccessor matrixAccessor;
+            private readonly int row;
 
             public ExcelRowAccessor(ExcelMatrixAccessor matrixAccessor, int row)
             {

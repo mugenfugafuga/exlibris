@@ -115,39 +115,5 @@ namespace ExLibris.Core.Json.Tests
             Assert.IsFalse((bool)new JsonObjectAccessor(jo).GetJsonValue(null));
             Assert.IsFalse((bool)new JsonObjectAccessor(jo).GetJsonValue(string.Empty));
         }
-
-
-        private static void CreateAssert(List<(string KeyPath, object Value)> values)
-        {
-            for(var i = 0; i < values.Count; ++i)
-            {
-                if (string .IsNullOrEmpty(values[i].KeyPath))
-                {
-                    Console.Write($"Assert.IsTrue(string.IsNullOrEmpty(values[{i}].KeyPath));");
-                }
-                else
-                {
-                    Console.Write($"Assert.AreEqual(\"{values[i].KeyPath}\", values[{i}].KeyPath);");
-                }
-
-                if (values[i].Value is string)
-                {
-                    Console.WriteLine($"Assert.AreEqual(\"{(string)values[i].Value}\", (string)values[{i}].Value);");
-                }
-                if (values[i].Value is int)
-                {
-                    Console.WriteLine($"Assert.AreEqual({(int)values[i].Value}, (int)values[{i}].Value);");
-                }
-                if (values[i].Value is double)
-                {
-                    Console.WriteLine($"Assert.AreEqual({(double)values[i].Value}d, (double)values[{i}].Value);");
-                }
-                if (values[i].Value is bool)
-                {
-                    var tf = (bool)values[i].Value ? "true" : "false";
-                    Console.WriteLine($"Assert.AreEqual({tf}, (bool)values[{i}].Value);");
-                }
-            }
-        }
     }
 }

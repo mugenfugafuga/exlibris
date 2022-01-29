@@ -6,8 +6,8 @@ namespace ExLibris.Core
     public class CallOnce
     {
         private const long NotYet = 0;
-        private Action action;
-        private object locker = new object();
+        private readonly Action action;
+        private readonly object locker = new object();
         private long flag = NotYet;
 
 
