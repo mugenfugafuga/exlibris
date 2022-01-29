@@ -100,7 +100,7 @@ namespace ExLibris.WebSockets
                     throw new Exception($"{nameof(afterThis)} is Error");
                 }
 
-                if (afterThis is bool && !(bool)afterThis)
+                if (afterThis is bool at && !at)
                 {
                     throw new Exception($"{nameof(afterThis)} is false");
                 }
@@ -108,7 +108,7 @@ namespace ExLibris.WebSockets
                 var client = support.ObjectRepository.GetObject<WebsocketClient>(webSocketHandle);
                 client.SendMessage(message);
 
-                return $"message sent : {DateTime.Now.ToString("yyyy-MM-ddThh:mm:ss.fff")}";
+                return $"message sent : {DateTime.Now:yyyy-MM-ddThh:mm:ss.fff}";
             });
 
         }

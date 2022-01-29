@@ -8,10 +8,10 @@ namespace ExLibris.Core.WebSockets
 {
     class WebSocketMessageReveiverHandle : IExcelObservable, IDisposable, IWebsocketListener
     {
-        private ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
-        private string name = $"Listener:{Guid.NewGuid().ToString()}";
+        private readonly ConcurrentBag<IExcelObserver> observers = new ConcurrentBag<IExcelObserver>();
+        private readonly string name = $"Listener:{Guid.NewGuid()}";
 
-        private WebsocketClient client;
+        private readonly WebsocketClient client;
 
         public WebSocketMessageReveiverHandle(WebsocketClient client)
         {

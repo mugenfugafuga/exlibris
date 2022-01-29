@@ -7,7 +7,7 @@ namespace ExLibris.Core.WebSockets
 {
     public class WebsocketClient : IDisposable
     {
-        private ConcurrentDictionary<string, IWebsocketListener> listeners = new ConcurrentDictionary<string, IWebsocketListener>();
+        private readonly ConcurrentDictionary<string, IWebsocketListener> listeners = new ConcurrentDictionary<string, IWebsocketListener>();
         public WebSocket WebSocket { get; }
 
         public WebsocketClient(string websocketUri) : this(websocketUri, string.Empty)
