@@ -29,7 +29,7 @@ namespace ExLibris.Core.Json
             var (_, lastkey) = JsonUtility.SplitLastKey(keyPath);
             var v = RevealValue(value);
 
-            if (JsonUtility.IsJsonArray(lastkey))
+            if (JsonUtility.IsJsonArrayKey(lastkey))
             {
                 var ja = JsonUtility.CastJsonArray(je);
                 var index = JsonUtility.GetJsonArrayIndex(lastkey);
@@ -104,7 +104,7 @@ namespace ExLibris.Core.Json
 
         private object DescendJsonElement(object prev, string prevKey, string key)
         {
-            if (JsonUtility.IsJsonArray(prevKey))
+            if (JsonUtility.IsJsonArrayKey(prevKey))
             {
                 var jarray = JsonUtility.CastJsonArray(prev);
                 var pindex = JsonUtility.GetJsonArrayIndex(prevKey);

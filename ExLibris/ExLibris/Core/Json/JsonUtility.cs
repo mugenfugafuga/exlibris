@@ -13,9 +13,9 @@ namespace ExLibris.Core.Json
 
         public static bool IsRootElement(string keyPath) => string.IsNullOrEmpty(keyPath);
 
-        public static bool IsJsonDictionary(string key) => !IsJsonArray(key);
+        public static bool IsJsonDictionaryKey(string key) => !IsJsonArrayKey(key);
 
-        public static bool IsJsonArray(string key) => key.StartsWith(arrayBra) && key.EndsWith(arrayKet);
+        public static bool IsJsonArrayKey(string key) => key.StartsWith(arrayBra) && key.EndsWith(arrayKet);
 
         public static int GetJsonArrayIndex(string key) => int.Parse(key.Substring(1, key.Length - 2));
 
@@ -47,7 +47,7 @@ namespace ExLibris.Core.Json
                 $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
 
         public static object NewJsonElement(string key)
-            => IsJsonArray(key) ? (object)new List<object>() : new Dictionary<string, object>();
+            => IsJsonArrayKey(key) ? (object)new List<object>() : new Dictionary<string, object>();
 
         public static bool IsJsonDictionary(object obj) => obj is Dictionary<string, object>;
 

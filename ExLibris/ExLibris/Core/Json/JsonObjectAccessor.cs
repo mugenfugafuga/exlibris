@@ -35,14 +35,14 @@ namespace ExLibris.Core.Json
                 return null;
             }
 
-            if (JsonUtility.IsJsonDictionary(obj) && JsonUtility.IsJsonDictionary(key))
+            if (JsonUtility.IsJsonDictionary(obj) && JsonUtility.IsJsonDictionaryKey(key))
             {
                 if (JsonUtility.CastJsonDictionary(obj).TryGetValue(key, out var o))
                 {
                     return o;
                 }
             }
-            if (JsonUtility.IsJsonArray(obj) && JsonUtility.IsJsonArray(key))
+            if (JsonUtility.IsJsonArray(obj) && JsonUtility.IsJsonArrayKey(key))
             {
                 var list = JsonUtility.CastJsonArray(obj);
                 var index = JsonUtility.GetJsonArrayIndex(key);
