@@ -5,11 +5,11 @@ namespace ExLibris.Core.WebSockets
     static class WebSocketUtility
     {
         public static object ExcelObserveWebSocketMessage(
-            string collerFunctionName,
+            string callerFunctionName,
             WebsocketClient client,
             params object[] paramObjects)
                => ExcelAsyncUtil.Observe(
-                       collerFunctionName,
+                       callerFunctionName,
                        paramObjects,
                        () => new WebSocketMessageReveiverHandle(client)
                        );

@@ -60,24 +60,24 @@ namespace ExLibris.Core.Json
         public static List<object> CastJsonArray(object obj) => (List<object>)obj;
 
         public static object ObserveJsonObject(
-        string collerFunctionName,
+        string callerFunctionName,
         ObjectRepository objectRepository,
         Func<object> jsonObjectFunc,
         params object[] paramObjects)
         => ExLibrisUtility.ExcelObserveObjectRegistration(
-            collerFunctionName,
+            callerFunctionName,
             jsonObjectName,
             objectRepository,
             jsonObjectFunc,
             paramObjects);
 
         public static object ObserveJsonObjectAsync(
-        string collerFunctionName,
+        string callerFunctionName,
         ObjectRepository objectRepository,
         Func<object> jsonObjectFunc,
         params object[] paramObjects)
         => ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
-            collerFunctionName,
+            callerFunctionName,
             jsonObjectName,
             objectRepository,
             jsonObjectFunc,
