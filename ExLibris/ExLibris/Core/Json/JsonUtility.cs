@@ -10,12 +10,14 @@ namespace ExLibris.Core.Json
         private const string arrayBra = "[";
         private const string arrayKet = "]";
         private const string jsonObjectName = "JsonObject";
-
+        private const string anyKey = "*";
         public static bool IsRootElement(string keyPath) => string.IsNullOrEmpty(keyPath);
 
         public static bool IsJsonDictionaryKey(string key) => !IsJsonArrayKey(key);
 
         public static bool IsJsonArrayKey(string key) => key.StartsWith(arrayBra) && key.EndsWith(arrayKet);
+
+        public static bool IsAnyKey(string key) => key == anyKey;
 
         public static int GetJsonArrayIndex(string key) => int.Parse(key.Substring(1, key.Length - 2));
 
