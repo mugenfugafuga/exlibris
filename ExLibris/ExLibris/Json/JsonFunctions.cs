@@ -436,17 +436,17 @@ namespace ExLibris.Json
         }
 
         [ExcelFunction(
-            Name = prefixFunctionName + nameof(SeachJsonArrayElements),
+            Name = prefixFunctionName + nameof(SearchJsonArrayElements),
             Category = categoryName)]
-        public static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
+        public static object SearchJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
             return JsonUtility.ObserveJsonObject(
-                nameof(SeachJsonArrayElements),
+                nameof(SearchJsonArrayElements),
                 support.ObjectRepository,
-                () => SeachJsonArrayElements(
+                () => SearchJsonArrayElements(
                     jsonArrayHandle,
                     relativeKeyPath,
                     searchValue,
@@ -458,9 +458,9 @@ namespace ExLibris.Json
         }
 
         [ExcelFunction(
-            Name = prefixFunctionName + nameof(SeachJsonArrayElementsAsync),
+            Name = prefixFunctionName + nameof(SearchJsonArrayElementsAsync),
             Category = categoryName)]
-        public static object SeachJsonArrayElementsAsync(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
+        public static object SearchJsonArrayElementsAsync(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
@@ -468,7 +468,7 @@ namespace ExLibris.Json
             return JsonUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObjectAsync),
                 support.ObjectRepository,
-                () => SeachJsonArrayElements(
+                () => SearchJsonArrayElements(
                     jsonArrayHandle,
                     relativeKeyPath,
                     searchValue,
@@ -479,7 +479,7 @@ namespace ExLibris.Json
                 configurationHandle);
         }
 
-        private static object SeachJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
+        private static object SearchJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, ExcelFunctionCallSupport support)
         {
             var jo = support.ObjectRepository.GetObject(jsonArrayHandle);
 
