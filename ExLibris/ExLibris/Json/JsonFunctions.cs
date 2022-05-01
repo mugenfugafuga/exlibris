@@ -414,6 +414,7 @@ namespace ExLibris.Json
                 },
                 objectHandle,
                 keys,
+                withoutKeys,
                 configurationHandle);
         }
 
