@@ -179,78 +179,115 @@ namespace ExLibris.Json
         [ExcelFunction(
         Name = prefixFunctionName + nameof(GetJsonKeyValues),
         Category = categoryName)]
-        public static object GetJsonKeyValues(string objectHandle, string configurationHandle, object depth)
+        public static object GetJsonKeyValues(string objectHandle, object condition, string configurationHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
             return ExLibrisUtility.FuncOrNAIfThrown(() =>
             {
-                if (ExLibrisUtility.IsExcelError(depth))
+                if (ExLibrisUtility.IsExcelError(condition))
                 {
-                    throw new ArgumentException($"{nameof(depth)} is Error.");
+                    throw new ArgumentException($"{nameof(condition)} is Error.");
                 }
 
-                if (ExLibrisUtility.IsExcelMissing(depth) || ExLibrisUtility.IsExcelEmpty(depth))
+                if (ExLibrisUtility.IsExcelMissing(condition) || ExLibrisUtility.IsExcelEmpty(condition))
                 {
                     return support.CreateJsonKeyValueMatrix(support.ObjectRepository.GetObject(objectHandle));
                 }
-                else
+                else if (condition is double depth)
                 {
                     return ExLibrisUtility.ExcelObserve(
                         nameof(GetJsonKeyValues),
                         () => ExLibrisUtility.NewObservableDisposableObject(
-                            () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support, Convert.ToInt32(depth))),
+                            () => CreateJsonKeyValueTable(
+                                () => support.NewJsonObjectAccessor(support.ObjectRepository.GetObject(objectHandle)).GetJsonValues(Convert.ToInt32(depth)),
+                                support)
+                            ),
                         objectHandle,
                         configurationHandle,
-                        depth);
+                        condition);
+                }
+                else if (condition is string keyPath)
+                {
+                    return ExLibrisUtility.ExcelObserve(
+                        nameof(GetJsonKeyValues),
+                        () => ExLibrisUtility.NewObservableDisposableObject(
+                            () => CreateJsonKeyValueTable(
+                                () => support.NewJsonObjectAccessor(support.ObjectRepository.GetObject(objectHandle)).GetJsonValues(keyPath),
+                                support)
+                            ),
+                        objectHandle,
+                        configurationHandle,
+                        condition);
                 }
 
+                throw new ArgumentException($"{nameof(GetJsonKeyValues)} failed. {nameof(objectHandle)}:{objectHandle}, {nameof(condition)}:{condition}");
             });
         }
 
         [ExcelFunction(
             Name = prefixFunctionName + nameof(GetJsonKeyValuesAsync),
             Category = categoryName)]
-        public static object GetJsonKeyValuesAsync(string objectHandle, string configurationHandle, object depth)
+        public static object GetJsonKeyValuesAsync(string objectHandle, object condition, string configurationHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
             return ExLibrisUtility.FuncOrNAIfThrown(() =>
             {
-                if (ExLibrisUtility.IsExcelError(depth))
+                if (ExLibrisUtility.IsExcelError(condition))
                 {
-                    throw new ArgumentException($"{nameof(depth)} is Error.");
+                    throw new ArgumentException($"{nameof(condition)} is Error.");
                 }
 
-                if (ExLibrisUtility.IsExcelMissing(depth) || ExLibrisUtility.IsExcelEmpty(depth))
+                if (ExLibrisUtility.IsExcelMissing(condition) || ExLibrisUtility.IsExcelEmpty(condition))
                 {
                     return ExLibrisUtility.RunAsync(
                         nameof(GetJsonKeyValuesAsync),
                         () => support.CreateJsonKeyValueMatrix(support.ObjectRepository.GetObject(objectHandle)),
                         objectHandle,
                         configurationHandle,
-                        depth);
+                        condition);
                 }
-                else
+                else if (condition is double depth)
                 {
                     return ExLibrisUtility.ExcelObserve(
                         nameof(GetJsonKeyValuesAsync),
                         () => ExLibrisUtility.NewObservableDisposableObjectAsync(
-                            () => CreateJsonKeyValueTable(support.ObjectRepository.GetObject(objectHandle), support, Convert.ToInt32(depth))),
+                            () => CreateJsonKeyValueTable( 
+                                () => support.NewJsonObjectAccessor(support.ObjectRepository.GetObject(objectHandle)).GetJsonValues(Convert.ToInt32(depth)),
+                                support)
+                            ),
                         objectHandle,
                         configurationHandle,
-                        depth);
+                        condition);
                 }
+                else if (condition is string keyPath)
+                {
+                    return ExLibrisUtility.ExcelObserve(
+                        nameof(GetJsonKeyValuesAsync),
+                        () => ExLibrisUtility.NewObservableDisposableObjectAsync(
+                            () => CreateJsonKeyValueTable(
+                                () => support.NewJsonObjectAccessor(support.ObjectRepository.GetObject(objectHandle)).GetJsonValues(keyPath),
+                                support)
+                            ),
+                        objectHandle,
+                        configurationHandle,
+                        condition);
+                }
+
+                throw new ArgumentException($"{nameof(GetJsonKeyValues)} failed. {nameof(objectHandle)}:{objectHandle}, {nameof(condition)}:{condition}");
 
             });
         }
 
-        private static (object[,] Table, IEnumerable<IDisposable> Disposables) CreateJsonKeyValueTable(object jo, ExcelFunctionCallSupport support, int depth)
+        private static (object[,] Table, IEnumerable<IDisposable> Disposables) CreateJsonKeyValueTable(
+            Func<IEnumerable<(string KeyPath, object Value)>> jsonKeyValueFunc,
+            ExcelFunctionCallSupport support)
         {
             var disposables = new List<IDisposable>();
-            var values = support.NewJsonObjectAccessor(jo).GetJsonValues(depth).ToList();
+            var values = jsonKeyValueFunc().ToList();
 
             var mb = support.GetExcelMatrixBuilder(values.Count, 2);
 
