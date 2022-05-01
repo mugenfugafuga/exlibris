@@ -45,7 +45,6 @@ namespace ExLibris.Core
             return new RowBuilder(this, row);
         }
 
-
         public int RowCount => matrix.Count;
 
         public int ColumnCount => matrix.Max(r => r.Count);
@@ -65,6 +64,21 @@ namespace ExLibris.Core
 
             return excel;
         }
+
+        public object[,] BuildExcelVector(int column)
+        {
+            var excel = new object[RowCount,1];
+
+            for (var r = 0; r < RowCount; ++r)
+            {
+                excel[r,0] = matrix[r][column];
+            }
+
+            return excel;
+        }
+
+        public object[,] BuildExcelVector()
+            => BuildExcelVector(0);
 
         private void ResizeRow(int row)
         {

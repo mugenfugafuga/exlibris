@@ -534,6 +534,63 @@ namespace ExLibris.Json
         }
 
         [ExcelFunction(
+            Name = prefixFunctionName + nameof(SearchJsonKeys),
+            Category = categoryName)]
+        public static object[,] SearchJsonKeys(string objectHandle, string key, object searchValue, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return SearchJsonKeys(objectHandle, key, searchValue, support);
+        }
+
+        [ExcelFunction(
+            Name = prefixFunctionName + nameof(SearchJsonKeysAsync),
+            Category = categoryName)]
+        public static object SearchJsonKeysAsync(string objectHandle, string key, object searchValue, string configurationHandle)
+        {
+            var context = ExLibrisContext.DefaultContext;
+            var support = context.GetFunctionCallSupport(configurationHandle);
+
+            return ExLibrisUtility.RunAsync(
+                nameof(GetJsonTableAsync),
+                () => SearchJsonKeys(objectHandle, key, searchValue, support),
+                objectHandle,
+                key,
+                searchValue,
+                configurationHandle);
+        }
+
+
+        private static object[,] SearchJsonKeys(string objectHandle, string key, object searchValue, ExcelFunctionCallSupport support)
+        {
+            var sv = support.ToValue(searchValue);
+
+            var jo = support.ObjectRepository.GetObject(objectHandle);
+            var kvs = support.NewJsonObjectAccessor(jo).GetJsonValues(key);
+
+            var keys = kvs
+                .Where(kv => kv.Value?.Equals(sv) ?? sv == null)
+                .Select(kv => kv.KeyPath)
+                .ToList();
+
+            if (keys.Count == 0)
+            {
+                return new object[,] { };
+            }
+
+            var emb = support.GetExcelMatrixBuilder(keys.Count, 1);
+            var r = 0;
+            foreach (var k in keys)
+            {
+                emb[r, 0] = k;
+                ++r;
+            }
+
+            return emb.BuildExcelVector();
+        }
+
+        [ExcelFunction(
             Name = prefixFunctionName + nameof(SearchJsonArrayElements),
             Category = categoryName)]
         public static object SearchJsonArrayElements(string jsonArrayHandle, string relativeKeyPath, object searchValue, string configurationHandle)
