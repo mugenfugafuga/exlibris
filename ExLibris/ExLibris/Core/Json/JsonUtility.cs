@@ -7,10 +7,13 @@ namespace ExLibris.Core.Json
     static class JsonUtility
     {
         private const char keySeparator = '.';
+        private static readonly string keySeparatorString = $"{keySeparator}";
         private const string arrayBra = "[";
         private const string arrayKet = "]";
         private const string jsonObjectName = "JsonObject";
         private const string anyKey = "*";
+        public const string RootKey = "";
+
         public static bool IsRootElement(string keyPath) => string.IsNullOrEmpty(keyPath);
 
         public static bool IsJsonDictionaryKey(string key) => !IsJsonArrayKey(key);
@@ -47,6 +50,8 @@ namespace ExLibris.Core.Json
         => IsRootElement(frontPartKey) ?
                 $"{arrayBra}{arrayIndex}{arrayKet}" :
                 $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
+
+        public static string ConcatKey(IEnumerable<string> keys) => string.Join(keySeparatorString, keys);
 
         public static object NewJsonElement(string key)
             => IsJsonArrayKey(key) ? (object)new List<object>() : new Dictionary<string, object>();

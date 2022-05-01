@@ -12,9 +12,28 @@ namespace ExLibris.Core.Json
             this.jsonObject = jsonObject;
         }
 
-        public IEnumerable<(string KeyPath, object Value)> GetJsonValues() => GetJsonValues(int.MaxValue, null, jsonObject);
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues() => GetJsonValues(int.MaxValue, JsonUtility.RootKey, jsonObject);
 
-        public IEnumerable<(string KeyPath, object Value)> GetJsonValues(int depth) => GetJsonValues(depth, null, jsonObject);
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues(int depth) => GetJsonValues(depth, JsonUtility.RootKey, jsonObject);
+
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues(string keyPath)
+        {
+            if (JsonUtility.IsRootElement(keyPath))
+            {
+                yield return (JsonUtility.RootKey, jsonObject);
+            }
+            else
+            {
+                var keys = JsonUtility.SplitKeyPath(keyPath);
+
+                var kvs = GetJsonValues(JsonUtility.RootKey, keys, jsonObject);
+
+                foreach(var kv in kvs)
+                {
+                    yield return kv;
+                }
+            }
+        }
 
         public object GetJsonValue(string keyPath)
         {
@@ -71,6 +90,74 @@ namespace ExLibris.Core.Json
             else
             {
                 return ToEnumerable(keyPath, value);
+            }
+        }
+
+        private static IEnumerable<(string KeyPath, object Value)> GetJsonValues(string currentKeyPath, IEnumerable<string> rest, object currentValue)
+        {
+            var rf = rest.FirstOrDefault();
+
+            if (rf == null)
+            {
+                yield return (currentKeyPath, currentValue);
+            }
+            else
+            {
+                var rr = rest.Skip(1);
+
+                if (JsonUtility.IsAnyKey(rf))
+                {
+                    foreach (var kv in GetJsonAnyValue(currentKeyPath, rr, currentValue))
+                    {
+                        yield return kv;
+                    }
+                }
+                else
+                {
+                    if (JsonUtility.IsJsonDictionary(currentValue) && JsonUtility.IsJsonDictionaryKey(rf))
+                    {
+                        var kvs = GetJsonValues(JsonUtility.ConcatKey(currentKeyPath, rf), rr, JsonUtility.CastJsonDictionary(currentValue)[rf]);
+
+                        foreach (var kv in kvs)
+                        {
+                            yield return kv;
+                        }
+                    }
+                    else if(JsonUtility.IsJsonArray(currentValue) && JsonUtility.IsJsonArrayKey(rf))
+                    {
+                        var index = JsonUtility.GetJsonArrayIndex(rf);
+                        var kvs = GetJsonValues(JsonUtility.ConcatKey(currentKeyPath, index), rr, JsonUtility.CastJsonArray(currentValue)[index]);
+
+                        foreach (var kv in kvs)
+                        {
+                            yield return kv;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<(string KeyPath, object Value)> GetJsonAnyValue(string currentKeyPath, IEnumerable<string> restrest, object currentValue)
+        {
+            if (JsonUtility.IsJsonDictionary(currentValue))
+            {
+                var kvs = JsonUtility.CastJsonDictionary(currentValue)
+                    .SelectMany(kv => GetJsonValues(JsonUtility.ConcatKey(currentKeyPath, kv.Key), restrest, kv.Value));
+
+                foreach (var kv in kvs)
+                {
+                    yield return kv;
+                }
+            }
+            else if (JsonUtility.IsJsonArray(currentValue))
+            {
+                var kvs = JsonUtility.CastJsonArray(currentValue)
+                    .SelectMany((value, index) => GetJsonValues(JsonUtility.ConcatKey(currentKeyPath, index), restrest, value));
+
+                foreach (var kv in kvs)
+                {
+                    yield return kv;
+                }
             }
         }
 
