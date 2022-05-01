@@ -368,7 +368,7 @@ namespace ExLibris.Json
         [ExcelFunction(
             Name = prefixFunctionName + nameof(GetJsonTable),
             Category = categoryName)]
-        public static object GetJsonTable(string objectHandle, object[] keys, string configurationHandle)
+        public static object GetJsonTable(string objectHandle, object[] keys, bool withoutKeys, string configurationHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
@@ -377,11 +377,11 @@ namespace ExLibris.Json
 
             if (JsonUtility.IsJsonDictionary(jo))
             {
-                return CreateJsonTable(JsonUtility.CastJsonDictionary(jo), GetKeyPaths(keys).ToArray(), support);
+                return CreateJsonTable(JsonUtility.CastJsonDictionary(jo), GetKeyPaths(keys).ToArray(), withoutKeys, support);
             }
             else if (JsonUtility.IsJsonArray(jo))
             {
-                return CreateJsonTable(JsonUtility.CastJsonArray(jo), GetKeyPaths(keys).ToArray(), support);
+                return CreateJsonTable(JsonUtility.CastJsonArray(jo), GetKeyPaths(keys).ToArray(), withoutKeys, support);
             }
 
             return support.ToExcel(jo);
@@ -390,7 +390,7 @@ namespace ExLibris.Json
         [ExcelFunction(
             Name = prefixFunctionName + nameof(GetJsonTableAsync),
             Category = categoryName)]
-        public static object GetJsonTableAsync(string objectHandle, object[] keys, string configurationHandle)
+        public static object GetJsonTableAsync(string objectHandle, object[] keys, bool withoutKeys, string configurationHandle)
         {
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
@@ -403,11 +403,11 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionary(jo))
                     {
-                        return CreateJsonTable(JsonUtility.CastJsonDictionary(jo), GetKeyPaths(keys).ToArray(), support);
+                        return CreateJsonTable(JsonUtility.CastJsonDictionary(jo), GetKeyPaths(keys).ToArray(), withoutKeys, support);
                     }
                     else if (JsonUtility.IsJsonArray(jo))
                     {
-                        return CreateJsonTable(JsonUtility.CastJsonArray(jo), GetKeyPaths(keys).ToArray(), support);
+                        return CreateJsonTable(JsonUtility.CastJsonArray(jo), GetKeyPaths(keys).ToArray(), withoutKeys, support);
                     }
 
                     return support.ToExcel(jo);
@@ -435,7 +435,7 @@ namespace ExLibris.Json
             }
         }
 
-        private static object[,] CreateJsonTable(Dictionary<string, object> jdictionary, string[] keys, ExcelFunctionCallSupport support)
+        private static object[,] CreateJsonTable(Dictionary<string, object> jdictionary, string[] keys, bool withoutKeys, ExcelFunctionCallSupport support)
         {
             var joa = support.NewJsonObjectAccessor(jdictionary);
             var keyPaths = keys.Length == 0 ?
@@ -444,20 +444,36 @@ namespace ExLibris.Json
             .ToArray() :
             keys;
 
-            var values = support.GetExcelMatrixBuilder(2, keyPaths.Length);
-
-            var c = 0;
-            foreach (var keyPath in keyPaths)
+            if (withoutKeys)
             {
-                values[0, c] = keyPath;
-                values[1, c] = joa.GetJsonValue(keyPath);
-                ++c;
-            }
+                var values = support.GetExcelMatrixBuilder(1, keyPaths.Length);
 
-            return values.BuildExcelMatrix();
+                var c = 0;
+                foreach (var keyPath in keyPaths)
+                {
+                    values[0, c] = joa.GetJsonValue(keyPath);
+                    ++c;
+                }
+
+                return values.BuildExcelMatrix();
+            }
+            else
+            {
+                var values = support.GetExcelMatrixBuilder(2, keyPaths.Length);
+
+                var c = 0;
+                foreach (var keyPath in keyPaths)
+                {
+                    values[0, c] = keyPath;
+                    values[1, c] = joa.GetJsonValue(keyPath);
+                    ++c;
+                }
+
+                return values.BuildExcelMatrix();
+            }
         }
 
-        private static object[,] CreateJsonTable(List<object> jarray, string[] keys, ExcelFunctionCallSupport support)
+        private static object[,] CreateJsonTable(List<object> jarray, string[] keys, bool withoutKeys, ExcelFunctionCallSupport support)
         {
             var joas = jarray
                 .Select(joae => support.NewJsonObjectAccessor(joae))
@@ -470,29 +486,50 @@ namespace ExLibris.Json
                 .ToArray() :
                 keys;
 
-            var values = support.GetExcelMatrixBuilder(joas.Count + 1, keyPaths.Length);
+            if (withoutKeys)
             {
-                var c = 0;
-                foreach (var keyPath in keyPaths)
-                {
-                    values[0, c] = keyPath;
-                    ++c;
-                }
-            }
+                var values = support.GetExcelMatrixBuilder(joas.Count, keyPaths.Length);
 
-            var r = 1;
-            foreach (var joa in joas)
+                var r = 0;
+                foreach (var joa in joas)
+                {
+                    var c = 0;
+                    foreach (var keyPath in keyPaths)
+                    {
+                        values[r, c] = joa.GetJsonValue(keyPath);
+                        ++c;
+                    }
+                    ++r;
+                }
+
+                return values.BuildExcelMatrix();
+            }
+            else
             {
-                var c = 0;
-                foreach (var keyPath in keyPaths)
+                var values = support.GetExcelMatrixBuilder(joas.Count + 1, keyPaths.Length);
                 {
-                    values[r, c] = joa.GetJsonValue(keyPath);
-                    ++c;
+                    var c = 0;
+                    foreach (var keyPath in keyPaths)
+                    {
+                        values[0, c] = keyPath;
+                        ++c;
+                    }
                 }
-                ++r;
-            }
 
-            return values.BuildExcelMatrix();
+                var r = 1;
+                foreach (var joa in joas)
+                {
+                    var c = 0;
+                    foreach (var keyPath in keyPaths)
+                    {
+                        values[r, c] = joa.GetJsonValue(keyPath);
+                        ++c;
+                    }
+                    ++r;
+                }
+
+                return values.BuildExcelMatrix();
+            }
         }
 
         [ExcelFunction(
