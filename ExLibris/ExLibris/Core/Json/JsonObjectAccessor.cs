@@ -12,23 +12,23 @@ namespace ExLibris.Core.Json
             this.jsonObject = jsonObject;
         }
 
-        public IEnumerable<(string KeyPath, object Value)> GetJsonValues() => GetJsonValues(int.MaxValue, JsonUtility.RootKey, jsonObject);
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues() => GetJsonValues(int.MaxValue, JsonUtility.JsonRootKey, jsonObject);
 
-        public IEnumerable<(string KeyPath, object Value)> GetJsonValues(int depth) => GetJsonValues(depth, JsonUtility.RootKey, jsonObject);
+        public IEnumerable<(string KeyPath, object Value)> GetJsonValues(int depth) => GetJsonValues(depth, JsonUtility.JsonRootKey, jsonObject);
 
         public IEnumerable<(string KeyPath, object Value)> GetJsonValues(string keyPath)
         {
-            if (JsonUtility.IsRootElement(keyPath))
+            if (JsonUtility.IsJsonRootKey(keyPath))
             {
-                yield return (JsonUtility.RootKey, jsonObject);
+                yield return (JsonUtility.JsonRootKey, jsonObject);
             }
             else
             {
                 var keys = JsonUtility.SplitKeyPath(keyPath);
 
-                var kvs = GetJsonValues(JsonUtility.RootKey, keys, jsonObject);
+                var kvs = GetJsonValues(JsonUtility.JsonRootKey, keys, jsonObject);
 
-                foreach(var kv in kvs)
+                foreach (var kv in kvs)
                 {
                     yield return kv;
                 }
@@ -37,7 +37,7 @@ namespace ExLibris.Core.Json
 
         public object GetJsonValue(string keyPath)
         {
-            if (JsonUtility.IsRootElement(keyPath))
+            if (JsonUtility.IsJsonRootKey(keyPath))
             {
                 return jsonObject;
             }
@@ -105,7 +105,7 @@ namespace ExLibris.Core.Json
             {
                 var rr = rest.Skip(1);
 
-                if (JsonUtility.IsAnyKey(rf))
+                if (JsonUtility.IsJsonAnyKey(rf))
                 {
                     foreach (var kv in GetJsonAnyValue(currentKeyPath, rr, currentValue))
                     {
@@ -123,7 +123,7 @@ namespace ExLibris.Core.Json
                             yield return kv;
                         }
                     }
-                    else if(JsonUtility.IsJsonArray(currentValue) && JsonUtility.IsJsonArrayKey(rf))
+                    else if (JsonUtility.IsJsonArray(currentValue) && JsonUtility.IsJsonArrayKey(rf))
                     {
                         var index = JsonUtility.GetJsonArrayIndex(rf);
                         var kvs = GetJsonValues(JsonUtility.ConcatKey(currentKeyPath, index), rr, JsonUtility.CastJsonArray(currentValue)[index]);

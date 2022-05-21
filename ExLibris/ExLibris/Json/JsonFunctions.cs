@@ -21,7 +21,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonFunctionUtility.ObserveJsonObject(
                 nameof(CreateJsonObject),
                 support.ObjectRepository,
                 () => CreateJsonObject(
@@ -39,7 +39,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObjectAsync(
+            return JsonFunctionUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObjectAsync),
                 support.ObjectRepository,
                 () => CreateJsonObject(
@@ -78,7 +78,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObjectAsync(
+            return JsonFunctionUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObjectAsync),
                 support.ObjectRepository,
                 () => support.CreateJsonObject(File.ReadAllText(jsonFile)),
@@ -133,7 +133,7 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionaryOrArray(value))
                     {
-                        return JsonUtility.NewObservableJsonObjectHandle(support.ObjectRepository, () => value);
+                        return JsonFunctionUtility.NewObservableJsonObjectHandle(support.ObjectRepository, () => value);
                     }
                     else
                     {
@@ -163,7 +163,7 @@ namespace ExLibris.Json
 
                     if (JsonUtility.IsJsonDictionaryOrArray(value))
                     {
-                        return JsonUtility.NewObservableJsonObjectHandleAsync(support.ObjectRepository, () => value);
+                        return JsonFunctionUtility.NewObservableJsonObjectHandleAsync(support.ObjectRepository, () => value);
                     }
                     else
                     {
@@ -255,7 +255,7 @@ namespace ExLibris.Json
                     return ExLibrisUtility.ExcelObserve(
                         nameof(GetJsonKeyValuesAsync),
                         () => ExLibrisUtility.NewObservableDisposableObjectAsync(
-                            () => CreateJsonKeyValueTable( 
+                            () => CreateJsonKeyValueTable(
                                 () => support.NewJsonObjectAccessor(support.ObjectRepository.GetObject(objectHandle)).GetJsonValues(Convert.ToInt32(depth)),
                                 support)
                             ),
@@ -298,7 +298,7 @@ namespace ExLibris.Json
                 var v = values[i].Value;
                 if (JsonUtility.IsJsonDictionaryOrArray(v))
                 {
-                    var vv = JsonUtility.NewJsonObjectHandle(support.ObjectRepository, () => v);
+                    var vv = JsonFunctionUtility.NewJsonObjectHandle(support.ObjectRepository, () => v);
                     vv.CallRegistration();
                     disposables.Add(vv);
                     mb[i, 1] = vv.HandleKey;
@@ -320,7 +320,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonFunctionUtility.ObserveJsonObject(
                 nameof(CreateJsonArray),
                 support.ObjectRepository,
                 () => CreateJsonArray(param, support),
@@ -336,7 +336,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObjectAsync(
+            return JsonFunctionUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonArrayAsync),
                 support.ObjectRepository,
                 () => CreateJsonArray(param, support),
@@ -420,7 +420,7 @@ namespace ExLibris.Json
 
         private static IEnumerable<string> GetKeyPaths(IEnumerable<object> keys)
         {
-            foreach(var key in keys)
+            foreach (var key in keys)
             {
                 if (ExLibrisUtility.IsExcelError(key))
                 {
@@ -598,7 +598,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObject(
+            return JsonFunctionUtility.ObserveJsonObject(
                 nameof(SearchJsonArrayElements),
                 support.ObjectRepository,
                 () => SearchJsonArrayElements(
@@ -620,7 +620,7 @@ namespace ExLibris.Json
             var context = ExLibrisContext.DefaultContext;
             var support = context.GetFunctionCallSupport(configurationHandle);
 
-            return JsonUtility.ObserveJsonObjectAsync(
+            return JsonFunctionUtility.ObserveJsonObjectAsync(
                 nameof(CreateJsonObjectAsync),
                 support.ObjectRepository,
                 () => SearchJsonArrayElements(
@@ -629,7 +629,7 @@ namespace ExLibris.Json
                     searchValue,
                     support),
                 jsonArrayHandle,
-                relativeKeyPath, 
+                relativeKeyPath,
                 searchValue,
                 configurationHandle);
         }
@@ -653,7 +653,7 @@ namespace ExLibris.Json
             {
                 return sjaes;
             }
-            else if(sjaes.Count == 1)
+            else if (sjaes.Count == 1)
             {
                 var v = sjaes.First();
 

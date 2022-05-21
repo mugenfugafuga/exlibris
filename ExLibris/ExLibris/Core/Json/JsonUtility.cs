@@ -1,5 +1,4 @@
-﻿using ExcelDna.Integration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace ExLibris.Core.Json
@@ -10,25 +9,24 @@ namespace ExLibris.Core.Json
         private static readonly string keySeparatorString = $"{keySeparator}";
         private const string arrayBra = "[";
         private const string arrayKet = "]";
-        private const string jsonObjectName = "JsonObject";
         private const string anyKey = "*";
-        public const string RootKey = "";
+        public const string JsonRootKey = "";
 
-        public static bool IsRootElement(string keyPath) => string.IsNullOrEmpty(keyPath);
+        public static bool IsJsonRootKey(string keyPath) => string.IsNullOrEmpty(keyPath);
 
         public static bool IsJsonDictionaryKey(string key) => !IsJsonArrayKey(key);
 
         public static bool IsJsonArrayKey(string key) => key.StartsWith(arrayBra) && key.EndsWith(arrayKet);
 
-        public static bool IsAnyKey(string key) => key == anyKey;
+        public static bool IsJsonAnyKey(string key) => key == anyKey;
 
         public static int GetJsonArrayIndex(string key) => int.Parse(key.Substring(1, key.Length - 2));
 
-        public static string[] SplitKeyPath(string keyPath) => IsRootElement(keyPath) ? null : keyPath.Split(keySeparator);
+        public static string[] SplitKeyPath(string keyPath) => IsJsonRootKey(keyPath) ? null : keyPath.Split(keySeparator);
 
         public static (string FrontPartKey, string LastKey) SplitLastKey(string keyPath)
         {
-            if (IsRootElement(keyPath))
+            if (IsJsonRootKey(keyPath))
             {
                 return (null, null);
             }
@@ -44,10 +42,10 @@ namespace ExLibris.Core.Json
         }
 
         public static string ConcatKey(string frontPartKey, string key)
-            => IsRootElement(frontPartKey) ? key : $"{frontPartKey}{keySeparator}{key}";
+            => IsJsonRootKey(frontPartKey) ? key : $"{frontPartKey}{keySeparator}{key}";
 
         public static string ConcatKey(string frontPartKey, int arrayIndex)
-        => IsRootElement(frontPartKey) ?
+        => IsJsonRootKey(frontPartKey) ?
                 $"{arrayBra}{arrayIndex}{arrayKet}" :
                 $"{frontPartKey}{keySeparator}{arrayBra}{arrayIndex}{arrayKet}";
 
@@ -65,39 +63,6 @@ namespace ExLibris.Core.Json
         public static Dictionary<string, object> CastJsonDictionary(object obj) => (Dictionary<string, object>)obj;
 
         public static List<object> CastJsonArray(object obj) => (List<object>)obj;
-
-        public static object ObserveJsonObject(
-        string callerFunctionName,
-        ObjectRepository objectRepository,
-        Func<object> jsonObjectFunc,
-        params object[] paramObjects)
-        => ExLibrisUtility.ExcelObserveObjectRegistration(
-            callerFunctionName,
-            jsonObjectName,
-            objectRepository,
-            jsonObjectFunc,
-            paramObjects);
-
-        public static object ObserveJsonObjectAsync(
-        string callerFunctionName,
-        ObjectRepository objectRepository,
-        Func<object> jsonObjectFunc,
-        params object[] paramObjects)
-        => ExLibrisUtility.ExcelObserveObjectRegistrationAsync(
-            callerFunctionName,
-            jsonObjectName,
-            objectRepository,
-            jsonObjectFunc,
-            paramObjects);
-
-        public static ObjectRegistrationHandle<object> NewJsonObjectHandle(ObjectRepository objectRepository, Func<object> func)
-            => new ObjectRegistrationHandle<object>(jsonObjectName, objectRepository, func);
-
-        public static IExcelObservable NewObservableJsonObjectHandle(ObjectRepository objectRepository, Func<object> func)
-            => ExLibrisUtility.NewObservableObjectRegistrationHandle(NewJsonObjectHandle(objectRepository, func));
-
-        public static IExcelObservable NewObservableJsonObjectHandleAsync(ObjectRepository objectRepository, Func<object> func)
-            => ExLibrisUtility.NewObservableObjectRegistrationHandleAsync(NewJsonObjectHandle(objectRepository, func));
 
         public static object CreateJsonObjectFromJsonText(string jsonText, ObjectRepository objectRepository, JsonValueConverter jsonValueConverter)
         => JsonObjectSerialiser.JsonTextToJsonObject(jsonText) ??

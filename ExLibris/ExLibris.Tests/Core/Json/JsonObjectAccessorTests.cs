@@ -102,7 +102,7 @@ namespace ExLibris.Core.Json.Tests
                 .OrderBy(kv => kv.KeyPath)
                 .ToList();
 
-            Assert.AreEqual(JsonUtility.RootKey, onlytop[0].KeyPath);
+            Assert.AreEqual(JsonUtility.JsonRootKey, onlytop[0].KeyPath);
             Assert.IsTrue(JsonUtility.IsJsonDictionary(onlytop[0].Value));
 
             var twogen = joa

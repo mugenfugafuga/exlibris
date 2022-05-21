@@ -172,6 +172,7 @@
     <Compile Include="ExLibrisContext.cs" />
     <Compile Include="ExLibrisFunctions.cs" />
     <Compile Include="Json\JsonFunctions.cs" />
+    <Compile Include="Json\JsonFunctionUtility.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebAPIs\Client\WebAPIClientFunctions.cs" />
     <Compile Include="WebAPIs\WebAPIFunctions.cs" />

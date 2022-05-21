@@ -19,7 +19,7 @@ namespace ExLibris.Core.Json
 
         public JsonObjectBuilder AddJsonValue(string keyPath, object value)
         {
-            if (JsonUtility.IsRootElement(keyPath))
+            if (JsonUtility.IsJsonRootKey(keyPath))
             {
                 return SetOnlyRootValue(value);
             }
@@ -66,7 +66,7 @@ namespace ExLibris.Core.Json
         {
             var (frontPart, _) = JsonUtility.SplitLastKey(keyPath);
 
-            if (JsonUtility.IsRootElement(frontPart))
+            if (JsonUtility.IsJsonRootKey(frontPart))
             {
                 if (root == null)
                 {
@@ -110,7 +110,7 @@ namespace ExLibris.Core.Json
                 var pindex = JsonUtility.GetJsonArrayIndex(prevKey);
                 ResizeJsonArray(jarray, pindex);
 
-                if(jarray[pindex] == null)
+                if (jarray[pindex] == null)
                 {
                     jarray[pindex] = JsonUtility.NewJsonElement(key);
                 }
@@ -134,7 +134,7 @@ namespace ExLibris.Core.Json
 
         private static void ResizeJsonArray(List<object> jarry, int index)
         {
-            for(var i = jarry.Count; i <= index; ++i)
+            for (var i = jarry.Count; i <= index; ++i)
             {
                 jarry.Add(null);
             }
@@ -142,7 +142,7 @@ namespace ExLibris.Core.Json
 
         private object RevealValue(object value)
         {
-            if(value is string val && objectRepository.TryGetObject(val, out var v))
+            if (value is string val && objectRepository.TryGetObject(val, out var v))
             {
                 return v;
             }
