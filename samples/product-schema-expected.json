@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/product.schema.json",
+  "title": "Product",
+  "description": "A product from Acme's catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "productId": {
+      "description": "The unique identifier for a product",
+      "type": "integer"
+    },
+    "productName": {
+      "description": "Name of the product",
+      "type": "string"
+    },
+    "price": {
+      "description": "The price of the product",
+      "type": "number",
+      "exclusiveMinimum": 0.0
+    },
+    "tags": {
+      "description": "Tags for the product",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "dimensions": {
+      "description": "Product dimensions",
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "length",
+        "width",
+        "height"
+      ]
+    },
+    "reviews": {
+      "description": "Reviews for the product",
+      "type": "array",
+      "items": {
+        "description": "A product review",
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "integer"
+          },
+          "comment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating"
+        ]
+      }
+    }
+  },
+  "required": [
+    "productId",
+    "productName",
+    "price",
+    "dimensions"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+    "books": [
+      {
+        "id": 1,
+        "title": "The Catcher in the Rye",
+        "author": "J.D. Salinger",
+        "publication_date": "1951-07-16",
+        "language": "English",
+        "publisher": "Little, Brown and Company",
+        "pages": 277,
+        "isbn_10": "0316769177",
+        "isbn_13": "978-0316769174",
+        "genre": "Coming-of-age fiction"
+      },
+      {
+        "id": 2,
+        "title": "To Kill a Mockingbird",
+        "author": "Harper Lee",
+        "publication_date": "1960-07-11",
+        "language": "English",
+        "publisher": "J. B. Lippincott & Co.",
+        "pages": 336,
+        "isbn_10": "0060935464",
+        "isbn_13": "978-0060935467",
+        "genre": "Southern Gothic, Bildungsroman"
+      },
+      {
+        "id": 3,
+        "title": "1984",
+        "author": "George Orwell",
+        "publication_date": "1949-06-08",
+        "language": "English",
+        "publisher": "Secker & Warburg",
+        "pages": 328,
+        "isbn_10": "9780451524935",
+        "isbn_13": "978-0451524935",
+        "genre": "Dystopian, Political fiction"
+      },
+      {
+        "id": 4,
+        "title": "One Hundred Years of Solitude",
+        "author": "Gabriel García Márquez",
+        "publication_date": "1967-05-30",
+        "language": "Spanish",
+        "publisher": "Harper & Row",
+        "pages": 417,
+        "isbn_10": "0060883286",
+        "isbn_13": "978-0060883287",
+        "genre": "Magical Realism"
+      },
+      {
+        "id": 5,
+        "title": "The Great Gatsby",
+        "author": "F. Scott Fitzgerald",
+        "publication_date": "1925-04-10",
+        "language": "English",
+        "publisher": "Charles Scribner's Sons",
+        "pages": 218,
+        "isbn_10": "0743273567",
+        "isbn_13": "978-0743273565",
+        "genre": "Modernist literature"
+      },
+      {
+        "id": 6,
+        "title": "War and Peace",
+        "author": "Leo Tolstoy",
+        "publication_date": "1869-01-01",
+        "language": "Russian",
+        "publisher": "The Russian Messenger",
+        "pages": 1225,
+        "isbn_10": "9780140444179",
+        "isbn_13": "978-0140444179",
+        "genre": "Historical fiction"
+      }
+    ]
+}

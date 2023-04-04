@@ -1,0 +1,49 @@
+{
+  "store_name": "My Online Store",
+  "address": {
+    "street": "123 Main Street",
+    "city": "Anytown",
+    "state": "CA",
+    "zip": "12345"
+  },
+  "products": [
+    {
+      "id": "1",
+      "name": "Product 1",
+      "description": "This is a description of product 1.",
+      "price": 9.99,
+      "image_url": "https://example.com/product1.jpg",
+      "reviews": [
+        {
+          "username": "johndoe",
+          "rating": 4,
+          "comment": "I really liked this product."
+        },
+        {
+          "username": "janedoe",
+          "rating": 5,
+          "comment": "This is the best product ever!"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Product 2",
+      "description": "This is a description of product 2.",
+      "price": 19.99,
+      "image_url": "https://example.com/product2.jpg",
+      "reviews": [
+        {
+          "username": "bobsmith",
+          "rating": 3,
+          "comment": "This product was okay."
+        },
+        {
+          "username": "sarahjones",
+          "rating": 2,
+          "comment": "I was not satisfied with this product."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "productId": 12345,
+  "productName": "Acme Widget",
+  "price": 9.99,
+  "tags": ["widget", "gadget"],
+  "dimensions": {
+    "length": 5,
+    "width": 3,
+    "height": 2
+  },
+  "reviews": [
+    {
+      "rating": 4,
+      "comment": "This widget is great!"
+    },
+    {
+      "rating": 2,
+      "comment": "Not so great."
+    }
+  ]
+}
