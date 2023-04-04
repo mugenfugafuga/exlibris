@@ -6,10 +6,9 @@ partial class UtilityFunctions
 {
     [ExcelFunction(
         Category = Category,
-        Name = $"{Category}.{nameof(ShowException)}",
-        Description = "show the last exception thrown in the calculation of the target cell",
-        IsHidden = true)]
-    public static object ShowException(
+        Name = $"{Category}.{nameof(Exception)}",
+        Description = "show the last exception thrown in the calculation of the target cell")]
+    public static object Exception(
         [ExcelArgument(AllowReference = true, Description = "target cell")] object errorCell,
         [ExcelArgument(Description = "optional argument.if the argument is invalid, the method will not execute the process.")] object identifier)
         => ExlibrisAddin.GetFunctionSupport().NoError(identifier).ErrorValueIfThrown<object>(support =>

@@ -49,6 +49,8 @@ internal class JSONNetSerializer : IJSONSerializer<JObject, JArray,JValue, JToke
 
     public object? ToObject(JToken json, Type objectType) => json.ToObject(objectType);
 
+    public T? ToObject<T>(JToken json) => json.ToObject<T>();
+
     public JToken FromObject(object? obj) => obj == null ? JValue.CreateNull() : JToken.FromObject(obj);
 
     public JToken LoadFile(string filePath)

@@ -34,6 +34,10 @@ partial class ExlibrisExcelFunctionSupport
 
         public IMatrix ShouldBeMatrix() => this;
 
+        public IScalar? IfScalar() => null;
+
+        public IMatrix? IfMatrix() => this;
+
         public ExcelAddress? Address { get; }
 
         public object? Value
@@ -46,12 +50,16 @@ partial class ExlibrisExcelFunctionSupport
             }
         }
 
+        public bool IsNull => false;
+
         public bool TryGetValue<T>([MaybeNullWhen(false)] out T _)
         {
             throw name == null ?
                 new InvalidOperationException("data type is not scalar.") :
                 new InvalidOperationException($"{name} is not scalar.");
         }
+
+        public T? TryGetValue<T>() where T : class => null;
 
         public T GetValueOrThrow<T>()
         {

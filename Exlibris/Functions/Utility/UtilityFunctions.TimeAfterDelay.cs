@@ -40,8 +40,8 @@ partial class UtilityFunctions
                     observer.OnCompleted();
                 };
 
-                observer.OnNext(ExcelError.ExcelErrorNA);
                 disposer.Add(timer).Start();
+                observer.OnNext(ExcelError.ExcelErrorNA);
             }, delay, timeType, identifier);
         });
 }

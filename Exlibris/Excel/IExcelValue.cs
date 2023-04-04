@@ -7,4 +7,8 @@ public interface IExcelValue : IScalar, IMatrix
     IScalar ShouldBeScalar();
 
     IMatrix ShouldBeMatrix();
+
+    IScalar? IfScalar();
+
+    IMatrix? IfMatrix();
 }

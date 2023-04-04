@@ -17,6 +17,8 @@ public interface IJSONSerializer
 {
     object? ToObject(JSONBaseType json, Type objectType);
 
+    T? ToObject<T>(JSONBaseType json);
+
     JSONBaseType FromObject(object? obj);
 
     JSONBaseType LoadFile(string filePath);

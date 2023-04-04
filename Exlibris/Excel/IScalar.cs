@@ -8,7 +8,11 @@ public interface IScalar
 
     object? Value { get; }
 
+    bool IsNull { get; }
+
     bool TryGetValue<T>([MaybeNullWhen(false)] out T value);
+
+    T? TryGetValue<T>() where T : class;
 
     T GetValueOrThrow<T>();
 

@@ -18,7 +18,7 @@ public partial class ExlibrisExcelFunctionSupport
 
     private static void CheckNoError(params object[] args)
     {
-        foreach (var arg in args.SelectMany(a => ResolveValues(a)))
+        foreach (var arg in args.SelectMany(a => DecompositeValues(a)))
         {
             if (arg is ExcelError)
             {
@@ -27,7 +27,7 @@ public partial class ExlibrisExcelFunctionSupport
         }
     }
 
-    private static IEnumerable<object> ResolveValues(object value)
+    private static IEnumerable<object> DecompositeValues(object value)
     {
         if (value is object[,] m)
         {
@@ -42,7 +42,7 @@ public partial class ExlibrisExcelFunctionSupport
             if (value is ExcelReference er)
             {
                 yield return er;
-                foreach (var o in ResolveValues(er.GetValue()))
+                foreach (var o in DecompositeValues(er.GetValue()))
                 {
                     yield return o;
                 }
@@ -57,7 +57,7 @@ public partial class ExlibrisExcelFunctionSupport
     public ExlibrisExcelFunctionSupport(
         Func<ExlibrisConfiguration> configurationFactory,
         IObjectRegistry objectRegistry,
-        ThrownExceptions thrownExceptions,
+        ObjectCache objectCache,
         IJSONSerializer<JObject, JArray, JValue, JToken, JSchema> serializer)
     {
         CallingCell = GetCallingCell();
@@ -66,12 +66,9 @@ public partial class ExlibrisExcelFunctionSupport
         excelValueConverter = new ExcelSingleValueConverter(configuration.ExcelValueConversion, objectRegistry, CallingCell);
 
         ObjectRegistry = objectRegistry;
-        ThrownExceptions = thrownExceptions;
-        JSONSerializer = serializer;
+        ObjectCache = objectCache;
 
-        // TODO : A function that calls 'observe' may do this twice. Therefore, do not remove the exception
-        ExceptionOfReference = thrownExceptions.ExceptionOf(CallingCell, false);
-        DoOnceIfThrown = CallOnce.New<Exception>(e => ExceptionOfReference.Is = e);
+        JSONSerializer = serializer;
     }
 
     public string? ExcelFunctionName { get; set; }
@@ -92,13 +89,9 @@ public partial class ExlibrisExcelFunctionSupport
 
     public IObjectRegistry ObjectRegistry { get; }
 
-    public ThrownExceptions ThrownExceptions { get; }
-
     public IJSONSerializer<JObject, JArray, JValue, JToken, JSchema> JSONSerializer { get; }
 
-    private ThrownExceptions.ExceptionOfReference ExceptionOfReference { get; }
-    
-    private Action<Exception> DoOnceIfThrown { get; }
+    public ObjectCache ObjectCache { get; }
 
     public ExlibrisExcelFunctionSupport NoError(params object[] arguments)
     {
@@ -111,7 +104,7 @@ public partial class ExlibrisExcelFunctionSupport
         catch (Exception ex)
         {
             ex.Data.Add("calling-function", ExcelFunctionName);
-            DoOnceIfThrown(ex);
+            Cache(ex);
             throw;
         }
     }
@@ -127,14 +120,28 @@ public partial class ExlibrisExcelFunctionSupport
         catch (Exception ex)
         {
             ex.Data.Add("calling-function", ExcelFunctionName);
-            DoOnceIfThrown(ex);
+            Cache(ex);
             throw;
         }
     }
 
-    public Exception? GetThrownException(ExcelAddress address) => ThrownExceptions[address];
+    public Exception? GetThrownException(ExcelAddress address)
+        => ObjectCache.TryGetValue<Exception>(address, out var v) ? v : null;
 
     public IObjectHandle RegisterObject(object obj) => ObjectRegistry.RegisterObject(obj, CallingCell);
+
+    public IDisposable Cache<T>(T value) => ObjectCache.Cashe(CallingCell, value);
+
+    public T Cache<T>(T value, CompositeDisposable disposer)
+    {
+        disposer.Add(ObjectCache.Cashe(CallingCell, value));
+        return value;
+    }
+
+    public T CacheDisposable<T>(T value, CompositeDisposable disposer) where T : IDisposable
+        => Cache(disposer.Add(value), disposer);
+
+    public T GetCachedObject<T>(ExcelAddress address) => ObjectCache.GetOrThrow<T>(address);
 
     private class ExcelSingleValueConverter
     {

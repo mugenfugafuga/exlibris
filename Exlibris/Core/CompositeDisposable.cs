@@ -25,14 +25,18 @@ public class CompositeDisposable : AbstractDisposable
     {
         foreach (var disposable in disposables.Distinct())
         {
-            if (disposable is AbstractDisposable ad)
+            try
             {
-                ad.OnDisposing();
+                if (disposable is AbstractDisposable ad)
+                {
+                    ad.OnDisposing();
+                }
+                else
+                {
+                    disposable.Dispose();
+                }
             }
-            else
-            {
-                disposable.Dispose();
-            }
+            catch { /* ignore */ }
 
         }
         disposables.Clear();
