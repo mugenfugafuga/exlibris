@@ -12,7 +12,24 @@ public static partial class WebAPIFunctions
 {
     private const string Category = $"{nameof(Exlibris)}.{nameof(WebAPI)}";
 
-    private static HttpContent? CreateHttpContent(ExlibrisExcelFunctionSupport support, IScalar json, IScalar contentType)
+    private static HttpContent? CreateHttpContent(ExlibrisExcelFunctionSupport support, IExcelValue data, IScalar contentType)
+    {
+        if (data.DataType == ExcelDataType.Scalar)
+        {
+            return CreateHttpContentFromScalar(support, data.ShouldBeScalar(), contentType);
+        }
+        else
+        {
+            // data.DataType = ExcelDataType.Matrix
+            var formdata = data.ShouldBeMatrix().Rows.ToDictionary(r => r[0].GetValueOrThrow<string>(), r => r[1].GetValueOrThrow<string>());
+
+            var content = new FormUrlEncodedContent(formdata);
+            content.Headers.ContentType = new MediaTypeHeaderValue(contentType.GetValueOrDefault("application/x-www-form-urlencoded"));
+            return content;
+        }
+    }
+
+        private static HttpContent? CreateHttpContentFromScalar(ExlibrisExcelFunctionSupport support, IScalar json, IScalar contentType)
     {
         if (json.TryGetValue<JToken>(out var jo))
         {

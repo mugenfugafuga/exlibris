@@ -10,7 +10,6 @@ public class HttpAuthenticationHeader
     [DataMember(Name = "certification")]
     public string? Certification { get; set; }
 
-
     [DataMember(Name = "basic")]
     public BasicAuthentication? Basic { get; set; }
 

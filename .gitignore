@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /samples/product-actual.json
 /samples/git-access-token.txt
 /samples/openweathermap-appid.txt
+/samples/deepl-api-key.txt
