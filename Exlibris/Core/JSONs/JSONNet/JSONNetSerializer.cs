@@ -7,6 +7,7 @@ using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml;
 
 namespace Exlibris.Core.JSONs.JsonNet;
 
@@ -27,7 +28,7 @@ internal class JSONNetSerializer : IJSONSerializer<JObject, JArray,JValue, JToke
         noIndentedJsonSerializer = JsonSerializer.Create();
 
         var indented = JsonConvert.DefaultSettings();
-        indented.Formatting = Formatting.Indented;
+        indented.Formatting = Newtonsoft.Json.Formatting.Indented;
 
         indentedJsonSerializer = JsonSerializer.Create(indented);
     }
@@ -173,6 +174,21 @@ internal class JSONNetSerializer : IJSONSerializer<JObject, JArray,JValue, JToke
             noIndentedJsonSerializer.Serialize(file, jsonSchema);
         }
     }
+
+    public XmlDocument ToXml(JToken json)
+    {
+        try
+        {
+            return JsonConvert.DeserializeXmlNode(Serialize(json)) ?? throw new ArgumentException($"cannot convert to Xml. json : {json}");
+        }
+        catch (Exception)
+        {
+            return JsonConvert.DeserializeXmlNode(Serialize(json), "xml") ?? throw new ArgumentException($"cannot convert to Xml. json : {json}");
+        }
+    }
+
+    public JToken FromXml(XmlDocument xml)
+        => JToken.Parse(JsonConvert.SerializeXmlNode(xml));
 
     public IJSONBuilder<JToken> NewJSONBuilder() => new JSONObjectBuilder();
 }

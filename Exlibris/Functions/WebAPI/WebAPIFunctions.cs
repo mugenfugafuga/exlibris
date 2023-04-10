@@ -2,6 +2,7 @@
 using Exlibris.Core.WebAPI;
 using Exlibris.Excel;
 using Exlibris.Functions.JSON;
+using Exlibris.Functions.XML;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -31,6 +32,9 @@ public static partial class WebAPIFunctions
             {
                 case "application/json":
                     observer.OnNext(support.JSONSerializer.Deserialize(await response.Content.ReadAsStringAsync()));
+                    return;
+                case "application/xml":
+                    observer.OnNext(XMLFuncUtil.CreateXMLObjectFromString(await response.Content.ReadAsStringAsync()));
                     return;
                 case "text/plain":
                     observer.OnNext(await response.Content.ReadAsStringAsync());

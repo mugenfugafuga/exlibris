@@ -1,11 +1,14 @@
 ﻿using Exlibris.Excel;
 using Newtonsoft.Json.Linq;
+using System.Xml;
 
 namespace Exlibris.Functions.JSON;
 static class JSONFuncUtil
 {
     public static JToken CreateJSONObject(ExlibrisExcelFunctionSupport support, IExcelValue value)
     {
+        var serializer = support.JSONSerializer;
+
         switch (value.DataType)
         {
             case ExcelDataType.Matrix:
@@ -17,10 +20,14 @@ static class JSONFuncUtil
                     {
                         return CreateJSONObjectFromString(support, vs);
                     }
+                    else if (value.TryGetValue<XmlDocument>(out var xml))
+                    {
+                        return serializer.FromXml(xml);
+                    }
                     else
                     {
                         // try to generate JSON management object from C# object;
-                        return support.JSONSerializer.FromObject(value.Value);
+                        return serializer.FromObject(value.Value);
                     }
 
                 }
