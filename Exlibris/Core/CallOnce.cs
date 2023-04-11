@@ -30,4 +30,17 @@ public static class CallOnce
             }
         };
     }
+
+    public static Action<T, U> New<T, U>(Action<T, U> action)
+    {
+        var callstatus = uncalled;
+
+        return (T arg1, U arg2) =>
+        {
+            if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+            {
+                action(arg1, arg2);
+            }
+        };
+    }
 }

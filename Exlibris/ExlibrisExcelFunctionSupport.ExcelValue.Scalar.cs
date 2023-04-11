@@ -7,6 +7,24 @@ partial class ExlibrisExcelFunctionSupport
 {
     private readonly struct ScalarExcelValue : IExcelValue
     {
+        private static bool IsBuiltInType(object? value)
+            => value != null && (
+                value is bool ||
+                value is byte ||
+                value is sbyte ||
+                value is char ||
+                value is decimal ||
+                value is double ||
+                value is float ||
+                value is int ||
+                value is uint ||
+                value is nint ||
+                value is nuint ||
+                value is long ||
+                value is ulong ||
+                value is short ||
+                value is ushort);
+
         public ExcelDataType DataType => ExcelDataType.Scalar;
 
         public IScalar ShouldBeScalar() => this;
@@ -18,9 +36,15 @@ partial class ExlibrisExcelFunctionSupport
                 new InvalidOperationException($"{name} is not matrix.");
         }
 
+        public IScalar? IfScalar() => this;
+
+        public IMatrix? IfMatrix() => null;
+
         public ExcelAddress? Address { get; }
 
         public object? Value { get; }
+
+        public bool IsNull => Value != null;
 
         public int ColumnSize => 1;
 
@@ -65,6 +89,9 @@ partial class ExlibrisExcelFunctionSupport
             return false;
         }
 
+        public T? TryGetValue<T>() where T : class
+            => TryGetValue<T>(out var v) ? v : null;
+
         public T GetValueOrThrow<T>()
         {
             var v = GetValueInternal<T>(Value);
@@ -94,6 +121,9 @@ partial class ExlibrisExcelFunctionSupport
             if (typeof(T).Equals(typeof(long))) { return Convert.ToInt64(arg); }
 
             if (typeof(T).IsEnum) { return Enum.ToObject(typeof(T), Convert.ToInt32(arg)); }
+
+            if (typeof(T).Equals(typeof(string)) && IsBuiltInType(arg))
+            { return arg.ToString(); }
 
             if (arg is T val) { return val; }
 

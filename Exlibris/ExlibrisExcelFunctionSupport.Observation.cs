@@ -1,5 +1,6 @@
 ﻿using ExcelDna.Integration;
 using Exlibris.Core;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Exlibris;
 partial class ExlibrisExcelFunctionSupport
@@ -27,7 +28,7 @@ partial class ExlibrisExcelFunctionSupport
 => ExcelAsyncUtil.Observe(
     ExcelFunctionName,
     DecompositeCallerParameters(callerParameters).ToArray(),
-    () => new ExcelObservableImpl(DoOnceIfThrown, ToExcel, (observer, disposer) =>
+    () => new ExcelObservableImpl(this, (observer, disposer) =>
     {
         observer.OnNext(func(observer, disposer));
         if (observationCompleted) { observer.OnCompleted(); }
@@ -39,7 +40,15 @@ partial class ExlibrisExcelFunctionSupport
     => ExcelAsyncUtil.Observe(
         ExcelFunctionName,
         DecompositeCallerParameters(callerParameters).ToArray(),
-        () => new ExcelObservableImpl(DoOnceIfThrown, ToExcel, action));
+        () => new ExcelObservableImpl(this, action));
+
+    public object Observe(
+        Func<IExcelObserver, CompositeDisposable, CancellationToken, Task> taskSource,
+        params object[] callerParameters)
+    => ExcelAsyncUtil.Observe(
+        ExcelFunctionName,
+        DecompositeCallerParameters(callerParameters).ToArray(),
+        () => new TaskExcelObservableImpl(this, taskSource));
 
     public object ObserveObjectRegistration(
         Func<object> generation,
@@ -53,32 +62,71 @@ partial class ExlibrisExcelFunctionSupport
 
     private class ExcelObservableImpl : IExcelObservable
     {
-        private readonly Action<Exception> doIfThrown;
-        private readonly Func<object?, CompositeDisposable?, object> toExcel;
+        private readonly ExlibrisExcelFunctionSupport support;
         private readonly Action<IExcelObserver, CompositeDisposable> action;
 
-        public ExcelObservableImpl(Action<Exception> doIfThrown, Func<object?, CompositeDisposable?, object> toExcel, Action<IExcelObserver, CompositeDisposable> action)
+        public ExcelObservableImpl(ExlibrisExcelFunctionSupport support, Action<IExcelObserver, CompositeDisposable> action)
         {
-            this.doIfThrown = doIfThrown;
-            this.toExcel = toExcel;
+            this.support = support;
             this.action = action;
         }
 
         public IDisposable Subscribe(IExcelObserver observer)
         {
-            var obs = new ExcelObserverImpl(observer, doIfThrown, toExcel);
-            var disposables = obs.Disposer;
+            var disposer = new CompositeDisposable();
+            var obs = new ExcelObserverImpl(observer, disposer, support);
 
             try
             {
-                action(obs, disposables);
-                return disposables;
+                action(obs, disposer);
+                return disposer;
             }
             catch (Exception ex)
             {
                 obs.OnError(ex);
                 obs.OnCompleted();
-                disposables.Dispose();
+                disposer.Dispose();
+                return DoNothingOnDisposing.Instance;
+            }
+        }
+    }
+
+    private class TaskExcelObservableImpl : IExcelObservable
+    {
+        private readonly ExlibrisExcelFunctionSupport support;
+        private readonly Func<IExcelObserver, CompositeDisposable, CancellationToken, Task> taskSource;
+
+        public TaskExcelObservableImpl(ExlibrisExcelFunctionSupport support, Func<IExcelObserver, CompositeDisposable, CancellationToken, Task> taskSource)
+        {
+            this.support = support;
+            this.taskSource = taskSource;
+        }
+
+        public IDisposable Subscribe(IExcelObserver observer)
+        {
+            var disposer = new CompositeDisposable();
+            var obs = new ExcelObserverImpl(observer, disposer, support);
+            var cancellationTokenSource = support.CacheDisposable(new CancellationTokenSource(), disposer);
+
+            try
+            {
+                var task = support.CacheDisposable(taskSource(obs, disposer, cancellationTokenSource.Token), disposer);
+
+                task.ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        obs.OnError(t.Exception);
+                    }
+                });
+
+                return disposer;
+            }
+            catch (Exception ex)
+            {
+                obs.OnError(ex);
+                obs.OnCompleted();
+                disposer.Dispose();
                 return DoNothingOnDisposing.Instance;
             }
         }
@@ -86,29 +134,45 @@ partial class ExlibrisExcelFunctionSupport
 
     private class ExcelObserverImpl : IExcelObserver
     {
-        private readonly IExcelObserver observer;
-        private readonly Action<Exception> doIfThrown;
-        private readonly Func<object?, CompositeDisposable?, object> toExcel;
-        private readonly Action onCompletedOnce;
+        private const long notCompleted = 0;
+        private const long completed = 1;
 
-        public CompositeDisposable Disposer { get; } = new CompositeDisposable();
+        private long status = notCompleted;
+
+        private readonly IExcelObserver observer;
+        private readonly CompositeDisposable disposer;
+        private readonly ExlibrisExcelFunctionSupport support;
+        private readonly Action onCompletedOnce;
         
-        public ExcelObserverImpl(IExcelObserver observer, Action<Exception> doIfThrown, Func<object?, CompositeDisposable?, object> toExcel)
+        public ExcelObserverImpl(IExcelObserver observer, CompositeDisposable disposer, ExlibrisExcelFunctionSupport support)
         {
             this.observer = observer;
-            this.doIfThrown = doIfThrown;
-            this.toExcel = toExcel;
+            this.disposer = disposer;
+            this.support = support;
             onCompletedOnce = CallOnce.New(() => observer.OnCompleted());
         }
 
-        public void OnCompleted() => onCompletedOnce();
+        public void OnCompleted()
+        {
+            Interlocked.Exchange(ref status, completed);
+            onCompletedOnce();
+        }
+
+        public void OnNext(object value)
+        {
+            if (Interlocked.Read(ref status) == notCompleted)
+            {
+                observer.OnNext(support.ToExcel(value, disposer));
+            }
+        }
 
         public void OnError(Exception exception)
         {
-            doIfThrown(exception);
-            observer.OnError(exception);
+            if (Interlocked.CompareExchange(ref status, completed, notCompleted) == notCompleted)
+            {
+                support.Cache(exception);
+                observer.OnNext(support.ToExcel(ExcelError.ExcelErrorValue, disposer));
+            }
         }
-
-        public void OnNext(object value) => observer.OnNext(toExcel(value, Disposer));
     }
 }

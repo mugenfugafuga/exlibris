@@ -1,8 +1,8 @@
 ﻿using ExcelDna.Integration;
+using ExcelDna.IntelliSense;
 using Exlibris.Configuration;
 using Exlibris.Core;
 using Exlibris.Core.JSONs;
-using Exlibris.Excel;
 using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 
@@ -24,11 +24,12 @@ public class ExlibrisAddin : IExcelAddIn
     }
 
     public static ExlibrisExcelFunctionSupport GetFunctionSupport(
-    [CallerMemberName] string callerName = "")
+        [CallerFilePath] string callerFilePath = "",
+    [   CallerMemberName] string callerName = "")
     {
         var context = serviceProvider?.GetRequiredService<ExlibrisExcelFunctionSupport>()
             ?? throw new NullReferenceException();
-        context.ExcelFunctionName = callerName;
+        context.ExcelFunctionName = $"{callerFilePath}.{callerName}";
         return context;
     }
 
@@ -40,15 +41,18 @@ public class ExlibrisAddin : IExcelAddIn
 
     public void AutoClose()
     {
+        IntelliSenseServer.Uninstall();
     }
 
     public void AutoOpen()
     {
+        IntelliSenseServer.Install();
+
         var services = new ServiceCollection();
         services.AddSingleton(ObjectRegistryFactory.NewConcurrentObjectRegistry());
         services.AddSingleton(JSONParserManager.GetJSONParser());
         services.AddSingleton(() => ExlibrisConfiguration);
-        services.AddSingleton(new ThrownExceptions());
+        services.AddSingleton(new ObjectCache());
 
         services.AddTransient<ExlibrisExcelFunctionSupport>();
 
