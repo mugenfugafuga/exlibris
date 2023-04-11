@@ -3,7 +3,7 @@
 Exlibris is an Excel function library developed using C# and ExcelDna that provides the following functionalities:
 
 1. JSON serialization and deserialization
-2. Web API execution (under development)
+2. Web API execution with support for GET, POST, PUT, DELETE, and PATCH methods. And Basic authentication and Bearer token authentication support.
 3. WebSocket communication (under development)
 4. Execution of C# code using reflection (under development)
 

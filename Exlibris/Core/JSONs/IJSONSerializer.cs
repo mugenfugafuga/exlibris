@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml;
 
 namespace Exlibris.Core.JSONs;
 
@@ -16,6 +17,8 @@ public interface IJSONSerializer
     where JSONValueType : JSONBaseType
 {
     object? ToObject(JSONBaseType json, Type objectType);
+
+    T? ToObject<T>(JSONBaseType json);
 
     JSONBaseType FromObject(object? obj);
 
@@ -52,6 +55,10 @@ public interface IJSONSerializer
     JSONSchema LoadSchemaFile(string filePath);
 
     void SaveSchemaFile(JSONSchema jsonSchema, string filePath, bool pretty);
+
+    XmlDocument ToXml(JSONBaseType json);
+
+    JSONBaseType FromXml(XmlDocument xml);
 
     IJSONBuilder<JSONBaseType> NewJSONBuilder();
 }

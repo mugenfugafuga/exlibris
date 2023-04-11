@@ -7,8 +7,7 @@ partial class UtilityFunctions
     [ExcelFunction(
         Category = Category,
         Name = $"{Category}.{nameof(TimeAtInterval)}",
-        Description = "display the current time at regular intervals",
-        IsHidden = true)]
+        Description = "display the current time at regular intervals")]
     public static object TimeAtInterval(
         [ExcelArgument(Description = "interval time (sec). default value : 10")] object interval,
         [ExcelArgument(Description = "type of time. 0 : double (default), 1 : string")] object timeType,
@@ -30,9 +29,8 @@ partial class UtilityFunctions
                     observer.OnNext(timefunc());
                 };
 
-                observer.OnNext(timefunc());
-
                 disposer.Add(timer).Start();
+                observer.OnNext(timefunc());
             }, interval, timeType, identifier);
         });
 }
