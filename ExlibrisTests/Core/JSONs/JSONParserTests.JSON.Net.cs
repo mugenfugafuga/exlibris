@@ -1,12 +1,14 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Exlibris.Core.JSONs.JsonNet;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using Newtonsoft.Json.Schema.Generation;
 
 namespace Exlibris.Core.JSONs.Tests
 {
     partial class JSONParserTests
     {
-        private readonly IJSONSerializer<JObject, JArray, JValue, JToken, JSchema> parser = JSONParserManager.GetJSONParser();
+        private static readonly IJSONSerializer parser = new JSONNetSerializer(Enumerable.Empty<JsonConverter>(), Enumerable.Empty<JSchemaGenerationProvider>());
 
         [TestMethod()]
         public void FromJsonString_JSONNet_JSONObject()
