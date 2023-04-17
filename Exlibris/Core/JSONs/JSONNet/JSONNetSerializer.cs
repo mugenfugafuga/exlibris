@@ -1,7 +1,6 @@
 ﻿using Exlibris.Core.JSONs.JSONNet;
 using Exlibris.Core.Reflection;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
@@ -11,29 +10,40 @@ using System.Xml;
 
 namespace Exlibris.Core.JSONs.JsonNet;
 
-internal class JSONNetSerializer : IJSONSerializer<JObject, JArray,JValue, JToken, JSchema>
+public class JSONNetSerializer : IJSONSerializer
 {
-    private static readonly ConcurrentDictionary<string, JSchema> jsonSchemas = new();
-    private static readonly JSchemaGenerator schemaGenerator = new();
-    private static readonly JsonSerializer noIndentedJsonSerializer;
-    private static readonly JsonSerializer indentedJsonSerializer;
+    private readonly ConcurrentDictionary<string, JSchema> jsonSchemas = new();
+    private readonly JSchemaGenerator schemaGenerator;
+    private readonly JsonSerializer noIndentedJsonSerializer;
+    private readonly JsonSerializer indentedJsonSerializer;
+    private readonly JsonSerializerSettings jsonSerializerSettings;
 
-    static JSONNetSerializer()
+    public JSONNetSerializer(IEnumerable<JsonConverter> jsonConverters, IEnumerable<JSchemaGenerationProvider> jSchemaGenerationProviders)
     {
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+        schemaGenerator = new JSchemaGenerator();
+        foreach(var jSchemaGenerationProvider in jSchemaGenerationProviders)
         {
-            Converters = new[] { new StringEnumConverter(), },
+            schemaGenerator.GenerationProviders.Add(jSchemaGenerationProvider);
+        }
+
+        var converters = jsonConverters.ToArray();
+
+        jsonSerializerSettings = new JsonSerializerSettings
+        { 
+            Converters = converters,
         };
 
-        noIndentedJsonSerializer = JsonSerializer.Create();
+        noIndentedJsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
 
-        var indented = JsonConvert.DefaultSettings();
-        indented.Formatting = Newtonsoft.Json.Formatting.Indented;
-
+        var indented = new JsonSerializerSettings
+        {
+            Converters = converters,
+            Formatting = Newtonsoft.Json.Formatting.Indented,
+        };
         indentedJsonSerializer = JsonSerializer.Create(indented);
     }
 
-    public static JSchema GetJSchema(string typeName)
+    private JSchema GetJSchema(string typeName)
         => jsonSchemas.GetOrAdd(typeName, (typeName) =>
         {
             var type = ReflectionUtil.GetType(typeName);
@@ -76,10 +86,10 @@ internal class JSONNetSerializer : IJSONSerializer<JObject, JArray,JValue, JToke
         }
     }
 
-    public string Serialize(JToken json) => JsonConvert.SerializeObject(json);
+    public string Serialize(JToken json) => JsonConvert.SerializeObject(json, jsonSerializerSettings);
 
     public JToken Deserialize(string jsonString)
-        => JsonConvert.DeserializeObject<JToken>(jsonString) is JToken jt
+        => JsonConvert.DeserializeObject<JToken>(jsonString, jsonSerializerSettings) is JToken jt
             ? jt
             : throw new ArgumentException($"can not parse Json String. {jsonString}");
 
@@ -147,7 +157,7 @@ internal class JSONNetSerializer : IJSONSerializer<JObject, JArray,JValue, JToke
         return false;
     }
 
-    public string SerializeSchema(JSchema jsonSchema) => JsonConvert.SerializeObject(jsonSchema);
+    public string SerializeSchema(JSchema jsonSchema) => JsonConvert.SerializeObject(jsonSchema, jsonSerializerSettings);
 
     public JSchema DeserializeSchema(string jsonString) => JSchema.Parse(jsonString);
 

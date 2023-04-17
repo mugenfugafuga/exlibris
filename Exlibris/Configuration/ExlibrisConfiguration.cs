@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using Exlibris.Core.DI;
+using System.Runtime.Serialization;
 
 namespace Exlibris.Configuration;
 
@@ -7,4 +8,7 @@ public class ExlibrisConfiguration
 {
     [DataMember(Name = "excel_value_conversion", Order = 10)]
     public ExcelValueConversionConfiguration ExcelValueConversion { get; set; } = new ExcelValueConversionConfiguration();
+
+    [DataMember(Name = "di_configuration", Order = 20)]
+    public DIConfiguration DIConfiguration { get; set; } = new DIConfiguration();
 }

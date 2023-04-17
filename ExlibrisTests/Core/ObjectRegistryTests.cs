@@ -9,7 +9,7 @@ namespace Exlibris.Core.Tests
         [TestMethod()]
         public void Basic_Test()
         {
-            var or = ObjectRegistryFactory.NewConcurrentObjectRegistry();
+            var or = new ConcurrentObjectRegistry();
 
             var val = new JValue(123);
 
@@ -36,7 +36,7 @@ namespace Exlibris.Core.Tests
         [TestMethod()]
         public void Register_Null_Object_Test()
         {
-            var or = ObjectRegistryFactory.NewConcurrentObjectRegistry();
+            var or = new ConcurrentObjectRegistry();
 #pragma warning disable CS8625
             Assert.ThrowsException<NullReferenceException>(() => or.RegisterObject(null));
 #pragma warning restore CS8625
@@ -45,7 +45,7 @@ namespace Exlibris.Core.Tests
         [TestMethod()]
         public void Key_Not_Found_Test()
         {
-            var or = ObjectRegistryFactory.NewConcurrentObjectRegistry();
+            var or = new ConcurrentObjectRegistry();
             Assert.ThrowsException<KeyNotFoundException>(() => or.GetObjectOrThrow("test"));
             Assert.ThrowsException<KeyNotFoundException>(() => or.GetObjectOrThrow<int>("test"));
             Assert.ThrowsException<KeyNotFoundException>(() => or.GetObjectHandleOrThrow("test"));

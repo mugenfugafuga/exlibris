@@ -3,8 +3,6 @@ using Exlibris.Configuration;
 using Exlibris.Core;
 using Exlibris.Core.JSONs;
 using Exlibris.Excel;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using System.Diagnostics;
 
 namespace Exlibris;
@@ -55,14 +53,13 @@ public partial class ExlibrisExcelFunctionSupport
     }
 
     public ExlibrisExcelFunctionSupport(
-        Func<ExlibrisConfiguration> configurationFactory,
+        ExlibrisConfiguration configuration,
         IObjectRegistry objectRegistry,
         ObjectCache objectCache,
-        IJSONSerializer<JObject, JArray, JValue, JToken, JSchema> serializer)
+        IJSONSerializer serializer)
     {
         CallingCell = GetCallingCell();
 
-        configuration = configurationFactory();
         excelValueConverter = new ExcelSingleValueConverter(configuration.ExcelValueConversion, objectRegistry, CallingCell);
 
         ObjectRegistry = objectRegistry;
@@ -71,25 +68,15 @@ public partial class ExlibrisExcelFunctionSupport
         JSONSerializer = serializer;
     }
 
+    private readonly ExcelSingleValueConverter excelValueConverter;
+
     public string? ExcelFunctionName { get; set; }
 
     public ExcelAddress CallingCell { get; }
 
-    private ExlibrisConfiguration configuration;
-    private ExcelSingleValueConverter excelValueConverter;
-    public ExlibrisConfiguration ExlibrisConfiguration
-    {
-        get => configuration;
-        set
-        {
-            configuration = value;
-            excelValueConverter = new ExcelSingleValueConverter(value.ExcelValueConversion, ObjectRegistry, CallingCell);
-        }
-    }
-
     public IObjectRegistry ObjectRegistry { get; }
 
-    public IJSONSerializer<JObject, JArray, JValue, JToken, JSchema> JSONSerializer { get; }
+    public IJSONSerializer JSONSerializer { get; }
 
     public ObjectCache ObjectCache { get; }
 
