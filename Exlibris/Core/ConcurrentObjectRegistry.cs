@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Exlibris.Core;
 
-internal class ConcurrentObjectRegistry : IObjectRegistry
+public class ConcurrentObjectRegistry : IObjectRegistry
 {
     private readonly ConcurrentDictionary<string, ObjectHandle> cache = new();
 

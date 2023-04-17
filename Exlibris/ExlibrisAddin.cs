@@ -2,7 +2,8 @@
 using ExcelDna.IntelliSense;
 using Exlibris.Configuration;
 using Exlibris.Core;
-using Exlibris.Core.JSONs;
+using Exlibris.Core.DI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 
@@ -10,33 +11,29 @@ namespace Exlibris;
 
 public class ExlibrisAddin : IExcelAddIn
 {
-    private static readonly Atomic<ExlibrisConfiguration> configuration = new(new ExlibrisConfiguration());
-    private static IServiceCollection? services;
+    private static readonly ExlibrisLock exlibrisLock = new();
     private static IServiceProvider? serviceProvider;
 
-    public static IServiceCollection Services
+    private static void SetUpAddin(ExlibrisConfiguration configuration)
     {
-        set
-        {
-            services = value;
-            serviceProvider = services.BuildServiceProvider();
-        }
+        var srv = new ServiceCollection()
+            .AddSingleton(configuration)
+            .Apply(configuration.DIConfiguration);
+
+        using var _ = exlibrisLock.GetWriteLock();
+        serviceProvider = srv.BuildServiceProvider();
     }
 
     public static ExlibrisExcelFunctionSupport GetFunctionSupport(
         [CallerFilePath] string callerFilePath = "",
     [   CallerMemberName] string callerName = "")
     {
+        using var _ = exlibrisLock.GetReadLock();
+
         var context = serviceProvider?.GetRequiredService<ExlibrisExcelFunctionSupport>()
             ?? throw new NullReferenceException();
         context.ExcelFunctionName = $"{callerFilePath}.{callerName}";
         return context;
-    }
-
-    public static ExlibrisConfiguration ExlibrisConfiguration
-    {
-        get => configuration.Value;
-        set => configuration.Value = value;
     }
 
     public void AutoClose()
@@ -48,14 +45,28 @@ public class ExlibrisAddin : IExcelAddIn
     {
         IntelliSenseServer.Install();
 
-        var services = new ServiceCollection();
-        services.AddSingleton(ObjectRegistryFactory.NewConcurrentObjectRegistry());
-        services.AddSingleton(JSONParserManager.GetJSONParser());
-        services.AddSingleton(() => ExlibrisConfiguration);
-        services.AddSingleton(new ObjectCache());
+        SetUpAddin(LoadConfiguration());
+    }
 
-        services.AddTransient<ExlibrisExcelFunctionSupport>();
+    private static ExlibrisConfiguration LoadConfiguration()
+    {
+        var baseDir = ExcelDnaUtil.XllPathInfo.Directory?.FullName;
 
-        Services = services;
+        if (baseDir != null)
+        {
+            var config = new ConfigurationBuilder()
+                .SetBasePath(baseDir)
+                .AddJsonFile("appsettings.json")
+                .AddEnvironmentVariables()
+                .Build();
+
+            var exlibrisConfiguration = config.Get<ExlibrisConfiguration>();
+            if (exlibrisConfiguration != null)
+            {
+                return exlibrisConfiguration;
+            }
+        }
+
+        throw new InvalidOperationException("failed to load appsettings.json");
     }
 }
