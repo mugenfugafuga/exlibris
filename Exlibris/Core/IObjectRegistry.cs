@@ -1,30 +1,31 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
 
-namespace Exlibris.Core;
-
-public interface IObjectRegistry
+namespace Exlibris.Core
 {
-    IObjectHandle RegisterObject(object value, object? misc = null);
+    public interface IObjectRegistry
+    {
+        IObjectHandle RegisterObject(object value, object misc = null);
 
-    bool TryGetObjectHandle(string key, [MaybeNullWhen(false)] out IObjectHandle handle);
+        bool TryGetObjectHandle(string key, out IObjectHandle handle);
 
-    IObjectHandle? GetObjectHandle(string key);
+        IObjectHandle GetObjectHandle(string key);
 
-    IObjectHandle GetObjectHandleOrThrow(string key);
+        IObjectHandle GetObjectHandleOrThrow(string key);
 
-    bool TryGetObject(string key, [MaybeNullWhen(false)] out object value);
+        bool TryGetObject(string key, out object value);
 
-    bool TryGetObject<T>(string key, [MaybeNullWhen(false)] out T value);
+        bool TryGetObject<T>(string key, out T value);
 
-    object? GetObject(string key);
+        object GetObject(string key);
 
-    object GetObjectOrThrow(string key);
+        object GetObjectOrThrow(string key);
 
-    T GetObjectOrThrow<T>(string key);
+        T GetObjectOrThrow<T>(string key);
 
-    void RemoveObject(string key);
+        void RemoveObject(string key);
 
-    int Count { get; }
+        int Count { get; }
 
-    IEnumerable<(string Key, IObjectHandle Handle)> Handles { get; }
+        IEnumerable<(string Key, IObjectHandle Handle)> Handles { get; }
+    }
 }

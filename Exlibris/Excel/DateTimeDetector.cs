@@ -1,27 +1,31 @@
-﻿namespace Exlibris.Excel;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-public class DateTimeDetector
+namespace Exlibris.Excel
 {
-    private readonly List<ExcelAddress> addresses = new();
-    private readonly List<DateTimeDetector> detectors = new();
-
-    public DateTimeDetector Add(object? obj)
+    public class DateTimeDetector
     {
-        if (obj != null)
+        private readonly List<ExcelAddress> addresses = new List<ExcelAddress>();
+        private readonly List<DateTimeDetector> detectors = new List<DateTimeDetector>();
+
+        public DateTimeDetector Add(object obj)
         {
-            if (obj is ExcelAddress a) { addresses.Add(a); }
-            if (obj is DateTimeDetector dt) { detectors.Add(dt); }
+            if (obj != null)
+            {
+                if (obj is ExcelAddress a) { addresses.Add(a); }
+                if (obj is DateTimeDetector dt) { detectors.Add(dt); }
+            }
+
+            return this;
         }
 
-        return this;
-    }
+        public bool IsDateTime(ExcelAddress? address)
+        {
+            if (address == null) { return false; }
 
-    public bool IsDateTime(ExcelAddress? address)
-    {
-        if (address == null) { return false; }
-
-        return
-            addresses.Any(a => a.Contains(address)) ||
-            detectors.Any(d => d.IsDateTime(address));
+            return
+                addresses.Any(a => a.Contains(address)) ||
+                detectors.Any(d => d.IsDateTime(address));
+        }
     }
 }

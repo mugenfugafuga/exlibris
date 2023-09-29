@@ -1,56 +1,61 @@
-﻿namespace Exlibris.Core;
+﻿using System.Collections.Generic;
+using System;
+using System.Linq;
 
-public class CompositeDisposable : AbstractDisposable
+namespace Exlibris.Core
 {
-    private readonly List<IDisposable> disposables = new();
-
-    public T Add<T>(T disposable) where T : IDisposable
+    public class CompositeDisposable : AbstractDisposable
     {
-        disposables.Add(disposable);
-        return disposable;
-    }
+        private readonly List<IDisposable> disposables = new List<IDisposable>();
 
-    public void AddAction(Action action)
-        => disposables.Add(new DisposableImpl(action));
-
-    public void Add(IEnumerable<IDisposable> disposables)
-    {
-        foreach(var disposable in disposables)
+        public T Add<T>(T disposable) where T : IDisposable
         {
-            this.disposables.Add(disposable);
+            disposables.Add(disposable);
+            return disposable;
         }
-    }
 
-    public override void OnDisposing()
-    {
-        foreach (var disposable in disposables.Distinct())
+        public void AddAction(Action action)
+            => disposables.Add(new DisposableImpl(action));
+
+        public void Add(IEnumerable<IDisposable> disposables)
         {
-            try
+            foreach (var disposable in disposables)
             {
-                if (disposable is AbstractDisposable ad)
-                {
-                    ad.OnDisposing();
-                }
-                else
-                {
-                    disposable.Dispose();
-                }
+                this.disposables.Add(disposable);
             }
-            catch { /* ignore */ }
-
         }
-        disposables.Clear();
-    }
 
-    private class DisposableImpl : IDisposable
-    {
-        private readonly Action action;
-
-        public DisposableImpl(Action action)
+        public override void OnDisposing()
         {
-            this.action = CallOnce.New(action);
+            foreach (var disposable in disposables.Distinct())
+            {
+                try
+                {
+                    if (disposable is AbstractDisposable ad)
+                    {
+                        ad.OnDisposing();
+                    }
+                    else
+                    {
+                        disposable.Dispose();
+                    }
+                }
+                catch { /* ignore */ }
+
+            }
+            disposables.Clear();
         }
 
-        public void Dispose() => action();
+        private class DisposableImpl : IDisposable
+        {
+            private readonly Action action;
+
+            public DisposableImpl(Action action)
+            {
+                this.action = CallOnce.New(action);
+            }
+
+            public void Dispose() => action();
+        }
     }
 }

@@ -1,145 +1,150 @@
 ﻿using Exlibris.Excel;
-using System.Diagnostics.CodeAnalysis;
+using System;
+using System.Collections.Generic;
 
-namespace Exlibris;
-
-partial class ExlibrisExcelFunctionSupport
+namespace Exlibris
 {
-    private class MatrixExcelValue : IExcelValue
+    partial class ExlibrisExcelFunctionSupport
     {
-        private readonly object[,] matrix;
-        private readonly ExcelSingleValueConverter converter;
-        private readonly string? name;
-        private readonly DateTimeDetector? dateTimeDetector;
-
-        public MatrixExcelValue(ExcelAddress? address, object[,] matrix, ExcelSingleValueConverter converter, string? name, DateTimeDetector? dateTimeDetector)
+        private class MatrixExcelValue : IExcelValue
         {
-            this.matrix = matrix;
-            RowSize = matrix.GetLength(0);
-            ColumnSize = matrix.GetLength(1);
-            this.converter = converter;
-            this.Address = address;
-            this.name = name;
-            this.dateTimeDetector = dateTimeDetector;
-        }
+            private readonly object[,] matrix;
+            private readonly ExcelSingleValueConverter converter;
+            private readonly string name;
+            private readonly DateTimeDetector dateTimeDetector;
 
-        public ExcelDataType DataType => ExcelDataType.Matrix;
+            public MatrixExcelValue(ExcelAddress? address, object[,] matrix, ExcelSingleValueConverter converter, string name, DateTimeDetector dateTimeDetector)
+            {
+                this.matrix = matrix;
+                RowSize = matrix.GetLength(0);
+                ColumnSize = matrix.GetLength(1);
+                this.converter = converter;
+                this.Address = address;
+                this.name = name;
+                this.dateTimeDetector = dateTimeDetector;
+            }
 
-        public IScalar ShouldBeScalar()
-        {
-            throw name == null ?
-                new InvalidOperationException("data type is not scalar.") :
-                new InvalidOperationException($"{name} is not scalar.");
-        }
+            public ExcelDataType DataType => ExcelDataType.Matrix;
 
-        public IMatrix ShouldBeMatrix() => this;
-
-        public IScalar? IfScalar() => null;
-
-        public IMatrix? IfMatrix() => this;
-
-        public ExcelAddress? Address { get; }
-
-        public object? Value
-        {
-            get
+            public IScalar ShouldBeScalar()
             {
                 throw name == null ?
                     new InvalidOperationException("data type is not scalar.") :
                     new InvalidOperationException($"{name} is not scalar.");
             }
-        }
 
-        public bool IsNull => false;
+            public IMatrix ShouldBeMatrix() => this;
 
-        public bool TryGetValue<T>([MaybeNullWhen(false)] out T _)
-        {
-            throw name == null ?
-                new InvalidOperationException("data type is not scalar.") :
-                new InvalidOperationException($"{name} is not scalar.");
-        }
+            public IScalar IfScalar() => null;
 
-        public T? TryGetValue<T>() where T : class => null;
+            public IMatrix IfMatrix() => this;
 
-        public T GetValueOrThrow<T>()
-        {
-            throw name == null ?
-                new InvalidOperationException("data type is not scalar.") :
-                new InvalidOperationException($"{name} is not scalar.");
-        }
+            public ExcelAddress? Address { get; }
 
-        public T GetValueOrDefault<T>(T defaultValue)
-        {
-            throw name == null ?
-                new InvalidOperationException("data type is not scalar.") :
-                new InvalidOperationException($"{name} is not scalar.");
-        }
-
-        public int ColumnSize { get; }
-
-        public int RowSize { get; }
-
-        public IEnumerable<IExcelRow> Rows
-        {
-            get
+            public object Value
             {
-                for (var row = 0; row < RowSize; ++row)
+                get
                 {
-                    yield return new ExcelRow(row, ColumnSize, Address?.RowAddress(row), matrix, converter, name, dateTimeDetector);
+                    throw name == null ?
+                        new InvalidOperationException("data type is not scalar.") :
+                        new InvalidOperationException($"{name} is not scalar.");
                 }
             }
-        }
 
-        public IEnumerable<IExcelValue> Values
-        {
-            get
+            public bool IsNull => false;
+
+            public bool TryGetValue<T>(out T _)
             {
-                for (var row = 0; row < RowSize; ++row)
+                throw name == null ?
+                    new InvalidOperationException("data type is not scalar.") :
+                    new InvalidOperationException($"{name} is not scalar.");
+            }
+
+            public T TryGetValue<T>() where T : class => null;
+
+            public T GetValueOrThrow<T>()
+            {
+                throw name == null ?
+                    new InvalidOperationException("data type is not scalar.") :
+                    new InvalidOperationException($"{name} is not scalar.");
+            }
+
+            public T GetValueOrDefault<T>(T defaultValue)
+            {
+                throw name == null ?
+                    new InvalidOperationException("data type is not scalar.") :
+                    new InvalidOperationException($"{name} is not scalar.");
+            }
+
+            public int ColumnSize { get; }
+
+            public int RowSize { get; }
+
+            public IEnumerable<IExcelRow> Rows
+            {
+                get
                 {
-                    for (var column = 0; column < ColumnSize; ++column)
+                    for (var row = 0; row < RowSize; ++row)
                     {
-                        yield return new ScalarExcelValue(Address?.Relative(row, column), matrix[row, column], converter, name, dateTimeDetector);
+                        yield return new ExcelRow(row, ColumnSize, Address?.RowAddress(row), matrix, converter, name, dateTimeDetector);
                     }
                 }
             }
-        }
-
-        readonly struct ExcelRow : IExcelRow
-        {
-            public IExcelValue this[int column] => new ScalarExcelValue(address?.ColumnAddress(column), excelMatrix[row, column], converter, name, dateTimeDetector);
-
-            public int Size => columnSize;
 
             public IEnumerable<IExcelValue> Values
             {
                 get
                 {
-                    for (var column = 0; column < columnSize; ++column)
+                    for (var row = 0; row < RowSize; ++row)
                     {
-                        yield return new ScalarExcelValue(address?.ColumnAddress(column), excelMatrix[row, column], converter, name, dateTimeDetector);
+                        for (var column = 0; column < ColumnSize; ++column)
+                        {
+                            yield return new ScalarExcelValue(Address?.Relative(row, column), matrix[row, column], converter, name, dateTimeDetector);
+                        }
                     }
                 }
             }
 
-            public IExcelValue First => new ScalarExcelValue(address?.ColumnAddress(0), excelMatrix[row, 0], converter, name, dateTimeDetector);
-
-            private readonly int row;
-            private readonly int columnSize;
-            private readonly ExcelAddress? address;
-            private readonly object[,] excelMatrix;
-            private readonly ExcelSingleValueConverter converter;
-            private readonly string? name;
-            private readonly DateTimeDetector? dateTimeDetector;
-
-            public ExcelRow(int row, int columnSize, ExcelAddress? address, object[,] excelMatrix, ExcelSingleValueConverter converter, string? name, DateTimeDetector? dateTimeDetector)
+            readonly struct ExcelRow : IExcelRow
             {
-                this.row = row;
-                this.columnSize = columnSize;
-                this.address = address;
-                this.excelMatrix = excelMatrix;
-                this.converter = converter;
-                this.name = name;
-                this.dateTimeDetector = dateTimeDetector;
+                public IExcelValue this[int column] => new ScalarExcelValue(address?.ColumnAddress(column), excelMatrix[row, column], converter, name, dateTimeDetector);
+
+                public int GetSize()
+                {
+                    return columnSize;
+                }
+
+                public IEnumerable<IExcelValue> Values
+                {
+                    get
+                    {
+                        for (var column = 0; column < columnSize; ++column)
+                        {
+                            yield return new ScalarExcelValue(address?.ColumnAddress(column), excelMatrix[row, column], converter, name, dateTimeDetector);
+                        }
+                    }
+                }
+
+                public IExcelValue First => new ScalarExcelValue(address?.ColumnAddress(0), excelMatrix[row, 0], converter, name, dateTimeDetector);
+
+                private readonly int row;
+                private readonly int columnSize;
+                private readonly ExcelAddress? address;
+                private readonly object[,] excelMatrix;
+                private readonly ExcelSingleValueConverter converter;
+                private readonly string name;
+                private readonly DateTimeDetector dateTimeDetector;
+
+                public ExcelRow(int row, int columnSize, ExcelAddress? address, object[,] excelMatrix, ExcelSingleValueConverter converter, string name, DateTimeDetector dateTimeDetector)
+                {
+                    this.row = row;
+                    this.columnSize = columnSize;
+                    this.address = address;
+                    this.excelMatrix = excelMatrix;
+                    this.converter = converter;
+                    this.name = name;
+                    this.dateTimeDetector = dateTimeDetector;
+                }
             }
         }
     }

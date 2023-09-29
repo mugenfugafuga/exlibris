@@ -1,14 +1,17 @@
-﻿namespace Exlibris.Core;
+﻿using System;
 
-public interface IObjectHandle : IDisposable
+namespace Exlibris.Core
 {
-    string Key { get; }
+    public interface IObjectHandle : IDisposable
+    {
+        string Key { get; }
 
-    object Value { get; }
+        object Value { get; }
 
-    object? Misc { get; }
+        object Misc { get; }
 
-    T? GetValue<T>();
+        T GetValue<T>();
 
-    T ValueOrThrow<T>();
+        T ValueOrThrow<T>();
+    }
 }

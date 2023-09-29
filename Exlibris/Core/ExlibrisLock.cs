@@ -1,36 +1,40 @@
-﻿namespace Exlibris.Core;
+﻿using System.Threading;
+using System;
 
-public class ExlibrisLock
+namespace Exlibris.Core
 {
-    private readonly ReaderWriterLockSlim locker = new();
-
-    public IDisposable GetReadLock() => new ReaderLocker(locker);    
-
-    public IDisposable GetWriteLock() => new WriterLocker(locker);
-
-    private class ReaderLocker : AbstractDisposable
+    public class ExlibrisLock
     {
-        private readonly ReaderWriterLockSlim locker;
+        private readonly ReaderWriterLockSlim locker = new ReaderWriterLockSlim();
 
-        public ReaderLocker(ReaderWriterLockSlim locker)
+        public IDisposable GetReadLock() => new ReaderLocker(locker);
+
+        public IDisposable GetWriteLock() => new WriterLocker(locker);
+
+        private class ReaderLocker : AbstractDisposable
         {
-            this.locker = locker;
-            locker.EnterReadLock();
+            private readonly ReaderWriterLockSlim locker;
+
+            public ReaderLocker(ReaderWriterLockSlim locker)
+            {
+                this.locker = locker;
+                locker.EnterReadLock();
+            }
+
+            public override void OnDisposing() => locker.ExitReadLock();
         }
 
-        public override void OnDisposing() => locker.ExitReadLock();
-    }
-
-    private class WriterLocker : AbstractDisposable
-    {
-        private readonly ReaderWriterLockSlim locker;
-
-        public WriterLocker(ReaderWriterLockSlim locker)
+        private class WriterLocker : AbstractDisposable
         {
-            this.locker = locker;
-            locker.EnterWriteLock();
-        }
+            private readonly ReaderWriterLockSlim locker;
 
-        public override void OnDisposing() => locker.ExitWriteLock();
+            public WriterLocker(ReaderWriterLockSlim locker)
+            {
+                this.locker = locker;
+                locker.EnterWriteLock();
+            }
+
+            public override void OnDisposing() => locker.ExitWriteLock();
+        }
     }
 }

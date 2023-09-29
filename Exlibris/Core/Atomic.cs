@@ -1,26 +1,31 @@
-﻿namespace Exlibris.Core;
-public class Atomic<T>
+﻿namespace Exlibris.Core
 {
-    private readonly ExlibrisLock locker = new();
-    private T value;
-
-    public Atomic(T value)
+    public class Atomic<T>
     {
-        this.value = value;
-    }
+        private readonly ExlibrisLock locker = new ExlibrisLock();
+        private T value;
 
-    public T Value
-    {
-        get
+        public Atomic(T value)
         {
-            using var _ = locker.GetReadLock();
-            return value;
-        }
-        set
-        {
-            using var  _ = locker.GetWriteLock();
             this.value = value;
         }
-    }
 
+        public T Value
+        {
+            get
+            {
+                using (var _ = locker.GetReadLock())
+                {
+                    return value;
+                }
+            }
+            set
+            {
+                using (var _ = locker.GetWriteLock())
+                {
+                    this.value = value;
+                }
+            }
+        }
+    }
 }

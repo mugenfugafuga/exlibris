@@ -1,32 +1,35 @@
-﻿namespace Exlibris.Core;
+﻿using System;
 
-public abstract class AbstractDisposable : IDisposable
+namespace Exlibris.Core
 {
-    private bool disposed = false;
-    
-    ~AbstractDisposable()
+    public abstract class AbstractDisposable : IDisposable
     {
-        Dispose(false);
-    }
+        private bool disposed = false;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    public void Dispose(bool disposing)
-    {
-        if (!disposed)
+        ~AbstractDisposable()
         {
-            if (disposing)
-            {
-                OnDisposing();
-            }
-
-            disposed = true;
+            Dispose(false);
         }
-    }
 
-    public abstract void OnDisposing();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    OnDisposing();
+                }
+
+                disposed = true;
+            }
+        }
+
+        public abstract void OnDisposing();
+    }
 }

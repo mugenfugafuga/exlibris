@@ -1,14 +1,15 @@
-﻿namespace Exlibris.Excel;
-
-public interface IExcelValue : IScalar, IMatrix
+﻿namespace Exlibris.Excel
 {
-    ExcelDataType DataType { get; }
+    public interface IExcelValue : IScalar, IMatrix
+    {
+        ExcelDataType DataType { get; }
 
-    IScalar ShouldBeScalar();
+        IScalar ShouldBeScalar();
 
-    IMatrix ShouldBeMatrix();
+        IMatrix ShouldBeMatrix();
 
-    IScalar? IfScalar();
+        IScalar IfScalar();
 
-    IMatrix? IfMatrix();
+        IMatrix IfMatrix();
+    }
 }

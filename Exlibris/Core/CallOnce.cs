@@ -1,46 +1,50 @@
-﻿namespace Exlibris.Core;
+﻿using System;
+using System.Threading;
 
-public static class CallOnce
+namespace Exlibris.Core
 {
-    private const int uncalled = 0;
-    private const int called = 1;
-
-    public static Action New(Action action)
+    public static class CallOnce
     {
-        var callstatus = uncalled;
+        private const int uncalled = 0;
+        private const int called = 1;
 
-        return () =>
+        public static Action New(Action action)
         {
-            if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+            var callstatus = uncalled;
+
+            return () =>
             {
-                action();
-            }
-        };
-    }
+                if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+                {
+                    action();
+                }
+            };
+        }
 
-    public static Action<T> New<T>(Action<T> action)
-    {
-        var callstatus = uncalled;
-
-        return (T arg) =>
+        public static Action<T> New<T>(Action<T> action)
         {
-            if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+            var callstatus = uncalled;
+
+            return (T arg) =>
             {
-                action(arg);
-            }
-        };
-    }
+                if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+                {
+                    action(arg);
+                }
+            };
+        }
 
-    public static Action<T, U> New<T, U>(Action<T, U> action)
-    {
-        var callstatus = uncalled;
-
-        return (T arg1, U arg2) =>
+        public static Action<T, U> New<T, U>(Action<T, U> action)
         {
-            if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+            var callstatus = uncalled;
+
+            return (T arg1, U arg2) =>
             {
-                action(arg1, arg2);
-            }
-        };
+                if (Interlocked.CompareExchange(ref callstatus, called, uncalled) == uncalled)
+                {
+                    action(arg1, arg2);
+                }
+            };
+        }
     }
 }

@@ -1,34 +1,37 @@
 ﻿using Exlibris.Excel;
 using Newtonsoft.Json.Linq;
+using System.IO;
 using System.Xml;
 
-namespace Exlibris.Functions.XML;
-static class XMLFuncUtil
+namespace Exlibris.Functions.XML
 {
-    public static XmlDocument CreateXMLObject(ExlibrisExcelFunctionSupport support, IExcelValue value)
+    static class XMLFuncUtil
     {
-        if (value.TryGetValue<JToken>(out var json))
+        public static XmlDocument CreateXMLObject(ExlibrisExcelFunctionSupport support, IExcelValue value)
         {
-            return support.JSONSerializer.ToXml(json);
+            if (value.TryGetValue<JToken>(out var json))
+            {
+                return support.JSONSerializer.ToXml(json);
+            }
+
+            return CreateXMLObjectFromString(value.ShouldBeScalar().GetValueOrThrow<string>());
         }
 
-        return CreateXMLObjectFromString(value.ShouldBeScalar().GetValueOrThrow<string>());
-    }
-        
 
-    public static XmlDocument CreateXMLObjectFromString(string value)
-    {
-        if (File.Exists(value))
+        public static XmlDocument CreateXMLObjectFromString(string value)
         {
-            var doc = new XmlDocument();
-            doc.Load(value);
-            return doc;
-        }
+            if (File.Exists(value))
+            {
+                var doc = new XmlDocument();
+                doc.Load(value);
+                return doc;
+            }
 
-        {
-            var doc = new XmlDocument();
-            doc.LoadXml(value);
-            return doc;
+            {
+                var doc = new XmlDocument();
+                doc.LoadXml(value);
+                return doc;
+            }
         }
     }
 }

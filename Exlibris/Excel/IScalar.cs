@@ -1,20 +1,19 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Exlibris.Excel;
-
-public interface IScalar
+﻿namespace Exlibris.Excel
 {
-    ExcelAddress? Address { get; }
+    public interface IScalar
+    {
+        ExcelAddress? Address { get; }
 
-    object? Value { get; }
+        object Value { get; }
 
-    bool IsNull { get; }
+        bool IsNull { get; }
 
-    bool TryGetValue<T>([MaybeNullWhen(false)] out T value);
+        bool TryGetValue<T>(out T value);
 
-    T? TryGetValue<T>() where T : class;
+        T TryGetValue<T>() where T : class;
 
-    T GetValueOrThrow<T>();
+        T GetValueOrThrow<T>();
 
-    T GetValueOrDefault<T>(T defaultValue);
+        T GetValueOrDefault<T>(T defaultValue);
+    }
 }

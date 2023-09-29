@@ -1,83 +1,89 @@
-﻿namespace Exlibris.Excel;
-public class MatrixBuilder
+﻿using System.Collections.Generic;
+using System;
+using System.Linq;
+
+namespace Exlibris.Excel
 {
-    private readonly List<List<object?>> rows = new();
-
-    public int RowCount => rows.Count;
-
-    public int ColumnCount => rows.Max(r => r.Count);
-
-    public MatrixBuilder Add(object? value)
-        => NewRow().Add(value).Close();
-
-    public Row NewRow()
+    public class MatrixBuilder
     {
-        var vs = new List<object?>();
-        rows.Add(vs);
-        return new Row(this, vs);
-    }
+        private readonly List<List<object>> rows = new List<List<object>>();
 
-    public object? Build()
-    {
-        if (RowCount > 1 || ColumnCount > 1)
+        public int RowCount => rows.Count;
+
+        public int ColumnCount => rows.Max(r => r.Count);
+
+        public MatrixBuilder Add(object value)
+            => NewRow().Add(value).Close();
+
+        public Row NewRow()
         {
-            return Matrix();
+            var vs = new List<object>();
+            rows.Add(vs);
+            return new Row(this, vs);
         }
-        else
-        {
-            return Single();
-        }
-    }
 
-    public object? Single()
-    {
-        try
+        public object Build()
         {
-            return rows[0][0];
-        }
-        catch(Exception)
-        {
-            return null;
-        }
-    }
-
-    public object?[,] Matrix()
-    {
-        var rowSize = RowCount;
-        var columnSize = ColumnCount;
-
-        var ret = new object?[rowSize, columnSize];
-
-        for (var r = 0; r < rowSize; ++r)
-        {
-            var rv = rows[r];
-            for (var c = 0; c < rv.Count; ++c)
+            if (RowCount > 1 || ColumnCount > 1)
             {
-                ret[r, c] = rv[c];
+                return Matrix();
+            }
+            else
+            {
+                return Single();
             }
         }
 
-        return ret;
-    }
-
-    public readonly struct Row
-    {
-        private readonly MatrixBuilder builder;
-        private readonly List<object?> values;
-
-        internal Row(MatrixBuilder builder, List<object?> values)
+        public object Single()
         {
-            this.builder = builder;
-            this.values = values;
+            try
+            {
+                return rows[0][0];
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
-        public Row Add(object? value)
+        public object[,] Matrix()
         {
-            values.Add(value);
-            return this;
+            var rowSize = RowCount;
+            var columnSize = ColumnCount;
+
+            var ret = new object[rowSize, columnSize];
+
+            for (var r = 0; r < rowSize; ++r)
+            {
+                var rv = rows[r];
+                for (var c = 0; c < rv.Count; ++c)
+                {
+                    ret[r, c] = rv[c];
+                }
+            }
+
+            return ret;
         }
 
-        public MatrixBuilder Close() => builder;
-    }
+        public readonly struct Row
+        {
+            private readonly MatrixBuilder builder;
+            private readonly List<object> values;
 
+            internal Row(MatrixBuilder builder, List<object> values)
+            {
+                this.builder = builder;
+                this.values = values;
+            }
+
+            public Row Add(object value)
+            {
+                values.Add(value);
+                return this;
+            }
+
+            public MatrixBuilder Close() => builder;
+        }
+
+    }
 }

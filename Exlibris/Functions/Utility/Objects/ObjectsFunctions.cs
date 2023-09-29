@@ -1,6 +1,8 @@
-﻿namespace Exlibris.Functions.Utility.Objects;
-public static partial class ObjectsFunctions
+﻿namespace Exlibris.Functions.Utility.Objects
 {
-    private const string Category = $"{nameof(Exlibris)}.{nameof(Utility)}.{nameof(Objects)}";
+    public static partial class ObjectsFunctions
+    {
+        private const string Category = "Exlibris.Utility.Objects";
 
+    }
 }

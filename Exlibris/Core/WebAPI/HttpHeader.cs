@@ -1,13 +1,15 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
-namespace Exlibris.Core.WebAPI;
-
-[DataContract(Name = "http_header")]
-public class HttpHeader
+namespace Exlibris.Core.WebAPI
 {
-    [DataMember(Name = "key")]
-    public string? Key { get; set; }
+    [DataContract(Name = "http_header")]
+    public class HttpHeader
+    {
+        [DataMember(Name = "key")]
+        public string Key { get; set; }
 
-    [DataMember(Name = "values")]
-    public List<string> Values { get; set; } = new List<string>();
+        [DataMember(Name = "values")]
+        public List<string> Values { get; set; } = new List<string>();
+    }
 }

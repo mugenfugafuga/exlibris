@@ -1,14 +1,17 @@
-﻿namespace Exlibris.Excel;
+﻿using System.Collections.Generic;
 
-public interface IMatrix
+namespace Exlibris.Excel
 {
-    ExcelAddress? Address { get; }
+    public interface IMatrix
+    {
+        ExcelAddress? Address { get; }
 
-    int ColumnSize { get; }
+        int ColumnSize { get; }
 
-    int RowSize { get; }
+        int RowSize { get; }
 
-    IEnumerable<IExcelRow> Rows { get; }
+        IEnumerable<IExcelRow> Rows { get; }
 
-    IEnumerable<IExcelValue> Values { get; }
+        IEnumerable<IExcelValue> Values { get; }
+    }
 }

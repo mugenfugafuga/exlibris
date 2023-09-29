@@ -1,19 +1,24 @@
-﻿namespace Exlibris.Functions.Utility;
+﻿using System;
 
-public static partial class UtilityFunctions
+namespace Exlibris.Functions.Utility
 {
-    private const string Category = $"{nameof(Exlibris)}.{nameof(Utility)}";
-
-    public enum DisplayTimeType
+    public static partial class UtilityFunctions
     {
-        Double = 0,
-        String = 1,
+        private const string Category = "Exlibris.Utility";
+
+        public enum DisplayTimeType
+        {
+            Double = 0,
+            String = 1,
+        }
+
+        private static Func<object> GetCurrentTimeFunc(DisplayTimeType timeType)
+        {
+            switch (timeType)
+            {
+                case DisplayTimeType.String: return () => DateTime.Now.ToString();
+                default: return () => DateTime.Now;
+            }
+        }
     }
-
-    private static Func<object> GetCurrentTimeFunc(DisplayTimeType timeType)
-    => timeType switch
-    {
-        DisplayTimeType.String => () => DateTime.Now.ToString(),
-        _ => () => DateTime.Now,
-    };
 }

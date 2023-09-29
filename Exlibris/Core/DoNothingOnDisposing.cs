@@ -1,8 +1,11 @@
-﻿namespace Exlibris.Core;
+﻿using System;
 
-public class DoNothingOnDisposing : IDisposable
+namespace Exlibris.Core
 {
-    public static readonly IDisposable Instance = new DoNothingOnDisposing();
+    public class DoNothingOnDisposing : IDisposable
+    {
+        public static readonly IDisposable Instance = new DoNothingOnDisposing();
 
-    public void Dispose() { }
+        public void Dispose() { }
+    }
 }

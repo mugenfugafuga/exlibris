@@ -1,14 +1,16 @@
-﻿namespace Exlibris.Excel;
-public readonly struct RawExcel
+﻿namespace Exlibris.Excel
 {
-    public ExcelAddress? Address { get; }
-    public object? Value { get; }
-    public string? Name { get; }
-
-    public RawExcel(ExcelAddress? address, object value, string? name)
+    public readonly struct RawExcel
     {
-        Address = address;
-        Value = value;
-        Name = name;
+        public ExcelAddress? Address { get; }
+        public object Value { get; }
+        public string Name { get; }
+
+        public RawExcel(ExcelAddress? address, object value, string name)
+        {
+            Address = address;
+            Value = value;
+            Name = name;
+        }
     }
 }

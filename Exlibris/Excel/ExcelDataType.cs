@@ -1,9 +1,10 @@
-﻿namespace Exlibris.Excel;
-
-public enum ExcelDataType
+﻿namespace Exlibris.Excel
 {
-    Null,
-    Scalar,
-    Vector,
-    Matrix,
+    public enum ExcelDataType
+    {
+        Null,
+        Scalar,
+        Vector,
+        Matrix,
+    }
 }
