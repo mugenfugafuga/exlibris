@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -13,6 +14,7 @@ namespace Exlibris.Core.WebAPI
         {
             var assembly = typeof(ExlibrisAddin).Assembly;
             UserAgent = $"{assembly.GetName().Name}/{assembly.GetName().Version}";
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
 
         public static HttpClient NewClinet()
