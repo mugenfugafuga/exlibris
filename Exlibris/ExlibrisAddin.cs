@@ -5,7 +5,10 @@ using Exlibris.Core;
 using Exlibris.Core.DI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace Exlibris
@@ -56,18 +59,37 @@ namespace Exlibris
         {
             var baseDir = ExcelDnaUtil.XllPathInfo.Directory?.FullName;
 
-            if (baseDir != null)
+            try
             {
-                var config = new ConfigurationBuilder()
-                    .SetBasePath(baseDir)
-                    .AddJsonFile("appsettings.json")
-                    .AddEnvironmentVariables()
-                    .Build();
-
-                var exlibrisConfiguration = config.Get<ExlibrisConfiguration>();
-                if (exlibrisConfiguration != null)
+                if (baseDir != null)
                 {
-                    return exlibrisConfiguration;
+                    var config = new ConfigurationBuilder()
+                        .SetBasePath(baseDir)
+                        .AddJsonFile("appsettings.json")
+                        .AddEnvironmentVariables()
+                        .Build();
+
+                    var exlibrisConfiguration = config.Get<ExlibrisConfiguration>();
+                    if (exlibrisConfiguration != null)
+                    {
+                        return exlibrisConfiguration;
+                    }
+                }
+            }
+            catch
+            {
+                var jsonSerializerSettings = new JsonSerializerSettings
+                {
+                    Converters = new JsonConverter[] { new StringEnumConverter()},
+                };
+
+                var js= JsonSerializer.Create(jsonSerializerSettings);
+                
+                using (var stream = new FileStream($"{baseDir}\\appsettings.json", FileMode.Open, FileAccess.Read))
+                using (var sr = new StreamReader(stream))
+                using (var reader = new JsonTextReader(sr))
+                {
+                    return js.Deserialize<ExlibrisConfiguration>(reader);
                 }
             }
 
