@@ -1,6 +1,6 @@
 ﻿namespace Exlibris.Core
 {
-    interface ISender
+    public interface ISender
     {
         void Send(string message);
     }

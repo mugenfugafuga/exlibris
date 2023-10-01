@@ -2,7 +2,7 @@
 
 namespace Exlibris.Core
 {
-    interface IReceiver
+    public interface IReceiver
     {
         Task<Message> ReceiveAsync();
     }

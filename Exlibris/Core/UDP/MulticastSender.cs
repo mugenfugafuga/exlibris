@@ -20,7 +20,7 @@ namespace Exlibris.Core.UDP
 
         public void Send(string message)
         {
-            var data = Encoding.ASCII.GetBytes(message);
+            var data = Encoding.UTF8.GetBytes(message);
             client.Send(data, data.Length, MulticastAddress, MulticastPort);
         }
 

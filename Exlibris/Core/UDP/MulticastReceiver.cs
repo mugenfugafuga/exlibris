@@ -38,13 +38,13 @@ namespace Exlibris.Core.UDP
 
             try
             {
-                var stmessage = Encoding.ASCII.GetString(buf);
+                var stmessage = Encoding.UTF8.GetString(buf);
 
                 return new Message
                 {
                     DateTime = recdt,
                     PayloadType = PayloadType.String,
-                    RemoteEndPoint = result.RemoteEndPoint,
+                    RemoteEndPoint = result.RemoteEndPoint.ToString(),
                     Payload = stmessage,
                 };
             }
@@ -54,7 +54,7 @@ namespace Exlibris.Core.UDP
                 {
                     DateTime = recdt,
                     PayloadType = PayloadType.Byte,
-                    RemoteEndPoint = result.RemoteEndPoint,
+                    RemoteEndPoint = result.RemoteEndPoint.ToString(),
                     Payload = buf,
                 };
             }
