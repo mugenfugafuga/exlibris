@@ -16,7 +16,6 @@ namespace Exlibris
             {
                 if (para is ExcelReference er)
                 {
-                    yield return er;
                     yield return er.GetValue();
                 }
                 else

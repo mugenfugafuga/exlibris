@@ -42,7 +42,6 @@ namespace Exlibris
             {
                 if (value is ExcelReference er)
                 {
-                    yield return er;
                     foreach (var o in DecompositeValues(er.GetValue()))
                     {
                         yield return o;
